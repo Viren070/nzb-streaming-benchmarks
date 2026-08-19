@@ -1,0 +1,45 @@
+# ---- secrets ----
+.env
+.env.local
+*.env
+!.env.example
+
+# ---- NZB corpus (copyright / bulk data, never committed) ----
+corpus/pool/
+corpus/selected/
+*.nzb
+*.nzb.gz
+# Generated corpus data: regenerable from the pool, and carries archive passwords,
+# message-ids and poster addresses that should not be published. The curation itself
+# lives in src/corpus/selection.mjs and docs/CORPUS.md, which are committed.
+corpus/analysis.json
+corpus/probe.json
+corpus/corpus.json
+
+# ---- cloned application sources / build output ----
+apps/
+!apps/README.md
+
+# ---- benchmark output ----
+# Every run is regenerable and the directory fills up fast; commit a specific
+# report deliberately (git add -f) if one is worth keeping.
+results/
+scratch/
+tmp/
+build/
+
+# ---- runtime state produced by the apps under test ----
+state/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+*.log
+
+# ---- node ----
+node_modules/
+npm-debug.log*
+pnpm-debug.log*
+.DS_Store
+build/

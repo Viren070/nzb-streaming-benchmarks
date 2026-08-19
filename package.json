@@ -1,0 +1,20 @@
+{
+  "name": "usenet-benchmarks",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Reproducible performance and capability benchmark of NZB streaming solutions",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "corpus:analyze": "node src/corpus/analyze.mjs",
+    "corpus:probe": "node src/corpus/probe.mjs",
+    "corpus:select": "node src/corpus/select.mjs",
+    "corpus": "npm run corpus:analyze && npm run corpus:probe && npm run corpus:select",
+    "clone": "bash scripts/clone-apps.sh",
+    "list": "node src/cli.mjs list",
+    "bench": "node src/cli.mjs run",
+    "smoke": "node src/cli.mjs run --apps=raw --tier=smoke"
+  }
+}
