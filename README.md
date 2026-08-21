@@ -18,8 +18,8 @@ Read it with three things in mind:
   articles with no application in the middle. Absolute MB/s means nothing without it.
 - **Correct is not the same as served.** Six entries are built to be unservable; refusing
   those is the right answer, and serving one is a worse result than failing.
-- **`n` and *med post* are part of each row.** An application that fails the large
-  entries is otherwise credited with the fast medians of the small ones it survived.
+- **Every headline median is over the same entries.** Rows are not medians of whatever
+  each application happened to survive; where one missed an entry, its `n` says so.
 
 ## Corpus
 
@@ -83,7 +83,7 @@ report explains what is and is not comparable; see
 | Seek | TTFB at 1/25/50/75/95% plus a backward seek, median and worst |
 | Throughput | sustained MB/s, p05 windowed MB/s, throughput after a seek |
 | Playback | simulated player at a target bitrate: time-to-buffer, seconds below bitrate |
-| Cost | idle RSS, peak RSS (per entry), **CPU-seconds per GiB delivered** |
+| Cost | idle RSS, per-entry RSS, run peak, drift, footprint after idle, **CPU-seconds per GiB delivered** |
 | Correctness | capability matrix, byte-identity consensus across applications |
 | Damage | behaviour at a known missing article: zero-fill, truncation, or repair |
 
@@ -103,8 +103,12 @@ rejected, and wrongly served.
 
 An application that fails the large entries is otherwise credited with the fast medians
 of the small ones it survived, because import time scales with post size. The summary
-publishes `n` and the median post size behind every row, and a like-for-like table
-restricted to the entries every application served.
+therefore fixes the population: every headline median is taken over the entries at least
+90% of the applications served, and an application that missed one of them shows it as
+`n`. The strict intersection is not used, because it is defined by the weakest engine in
+the field, so one broken application collapses the population for everybody and the set
+moves between runs. Each application's own-set medians, and the size of the gap between
+the two, are published per application rather than in the headline.
 
 ### The `raw` baseline
 

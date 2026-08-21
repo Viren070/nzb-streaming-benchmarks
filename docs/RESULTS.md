@@ -28,6 +28,21 @@ Microsoft Windows 11 Pro · AMD Ryzen 7 7800X3D 8-Core Processor (16 threads) ·
 > The `raw` row is this harness fetching the same articles with no application in
 > the middle, so read every other number relative to it.
 
+### Applications measured
+
+| App | Runtime | Language | Version | Serving | Startup |
+|---|---|---|---|---|---:|
+| **nzbdavex** | source | C# (.NET 10) | `312d3bc` | webdav | 3.38 s |
+| **Decypharr** | docker | Go | `v2.5` (`0dd1cbb`) | webdav | 2.31 s |
+| **StremThru (newz)** | source | Go | `0.103.2` | http-range | 567 ms |
+| **raw NNTP baseline** | source | JavaScript (this harness) | `harness-builtin` | http-range | 3 ms |
+| **StreamNZB** | source | Go | `3e79529` | http-range | 1.55 s |
+| **nzbdav** | source | C# (.NET 10) | `794948b` | webdav | 3.33 s |
+| **AltMount** | source | Go | `4b42c67` | webdav | 554 ms |
+| **AIOStreams** | source | TypeScript | `9e59c4a` | http-range | 7.78 s |
+| **Comet (feat/usenet)** | docker | Python + Rust | `ed1ede7` (`ed1ede7`) | http-range | 99.64 s |
+| **InfiniDysk** | source | C# (.NET 10) | `1f9f45b` | webdav | 7.60 s |
+
 ### Run settings
 
 | Setting | Value |
@@ -41,29 +56,130 @@ Microsoft Windows 11 Pro · AMD Ryzen 7 7800X3D 8-Core Processor (16 threads) ·
 
 ## Summary
 
-Medians across the performance tiers (`smoke`, `core`, `stress`). Failure and
-negative tiers are excluded here and reported separately below.
+Every median below is taken over **the same 12 entries for every**
+**application**: the perf-tier entries (`smoke`, `core`, `stress`) that at least
+9 of the 10 applications served. Median post size across that set is
+12.5 GiB.
 
-> **`n` and *med post* are part of the result, not footnotes.** Each row's medians
-> are taken over the entries *that application served*, so they are medians over
-> different populations. Import and click&rarr;byte scale with post size, so an
-> application that fails the large entries is credited with the fast medians of the
-> small ones it survived. Compare the like-for-like table below before ranking.
+> **Why a quorum and not the entries all of them served.** That strict intersection
+> is 6 entries here, and it is defined by the weakest application in the field:
+> one broken engine collapses the population for everybody, and the set moves between
+> runs as the field changes. A quorum keeps it wide and stable. Where an application
+> missed one of the 12, its `n` column says so.
 
-| App | Runtime | n | Med post | Seq MB/s | p05 MB/s | Click&rarr;byte | Import | Cold TTFB | Warm TTFB | Seek TTFB | Full seek | Worst seek | CPU s/GiB | Idle RSS | RSS/item | RSS drift | After idle | Correct |
-|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| **nzbdavex** | source | 22 | 26.3 GiB | 38.3 | 20.9 | 2.81 s | 2.60 s | 153 ms | 144 ms | 261 ms | 744 ms | 395 ms | 36.8 | 136 MiB | 514 MiB | +4 MiB | 412 MiB | 28/31 |
-| **Decypharr** | docker | 17 | 25.3 GiB | 35.6 | 20.7 | 9.76 s | 9.25 s | 283 ms | 1 ms | 293 ms | 521 ms | 786 ms | 30.0 | 41 MiB | 435 MiB | +1168 MiB | 1562 MiB | 23/31 |
-| **StremThru (newz)** | source | 20 | 26.3 GiB | 26.7 | 14.6 | 4.07 s | 3.89 s | 150 ms | 145 ms | 459 ms | 956 ms | 647 ms | 69.8 | 83 MiB | 876 MiB | +533 MiB | 997 MiB | 27/31 |
-| **raw NNTP baseline** | source | 24 | 26.3 GiB | 35.1 | 25.5 | 497 ms | 208 ms | 287 ms | 388 ms | 340 ms | 450 ms | 411 ms | 22.0 | 517 MiB | 679 MiB | +48 MiB | 654 MiB | 26/31 |
-| **StreamNZB** | source | 15 | 8.8 GiB | 38.8 | 23.3 | 1.60 s | 32 ms | 1.35 s | 3 ms | 218 ms | 636 ms | 536 ms | 6.5 | 50 MiB | 535 MiB | -5 MiB | 532 MiB | 21/31 |
-| **nzbdav** | source | 21 | 27.3 GiB | 37.7 | 21.3 | 3.39 s | 3.21 s | 140 ms | 249 ms | 394 ms | 680 ms | 604 ms | 17.4 | 118 MiB | 308 MiB | +26 MiB | 298 MiB | 27/31 |
-| **AltMount** | source | 17 | 25.3 GiB | 32.1 | 21.1 | 11.98 s | 11.35 s | 475 ms | 350 ms | 567 ms | 889 ms | 789 ms | 6.9 | 34 MiB | 745 MiB | +738 MiB | 968 MiB | 23/31 |
-| **AIOStreams** | source | 24 | 26.3 GiB | 43.4 | 21.7 | 1.20 s | 839 ms | 261 ms | 2 ms | 509 ms | 622 ms | 676 ms | 8.5 | 225 MiB | 558 MiB | +399 MiB | 897 MiB | 30/31 |
-| **Comet (feat/usenet)** | docker | 10 | 17.1 GiB | 18.7 | 5.9 | 3.86 s | 3.60 s | 210 ms | 94 ms | 487 ms | 1.38 s | 1.15 s | 55.0 | 268 MiB | 860 MiB | +747 MiB | — MiB | 16/31 |
-| **InfiniDysk** | source | 21 | 27.3 GiB | 12.3 | 2.2 | 4.52 s | 4.03 s | 27 ms | 2 ms | 26 ms | 1.17 s | 32 ms | 26.5 | 164 MiB | 976 MiB | +625 MiB | 1522 MiB | 28/31 |
+Entries: `plain-small`, `rar-named-small`, `plain-medium`, `plain-season-pack`, `rar-stored-movie`, `rar4-inner-obfuscated`, `rar-identity-grouped`, `rar4-obfuscated-volumes`, `7z-plain-header`, `7z-plain-large`, `7z-split-compressed-header`, `rar-season-pack`.
+
+### Verdict
+
+*Correct* is not *served*. Six corpus entries are built to be unservable: three
+`negative` (compressed archives, no password) and three `failure` (dead post,
+severe damage, missing volumes). Refusing those is the right answer, and serving
+one means emitting bytes that cannot be the media, which is a worse result than
+refusing, not a better one.
+
+| App | Served | Capability gaps | Correctly refused | **Wrongly served** |
+|---|---:|---:|---:|---:|
+| **nzbdavex** | 23/25 | 2 | 5/6 | **1** |
+| **Decypharr** | 18/25 | 7 | 5/6 | **1** |
+| **StremThru (newz)** | 21/25 | 4 | 6/6 | 0 |
+| **raw NNTP baseline** | 25/25 | 0 | 1/6 | **5** |
+| **StreamNZB** | 16/25 | 9 | 5/6 | **1** |
+| **nzbdav** | 22/25 | 3 | 5/6 | **1** |
+| **AltMount** | 18/25 | 7 | 5/6 | **1** |
+| **AIOStreams** | 25/25 | 0 | 5/6 | **1** |
+| **Comet (feat/usenet)** | 10/25 | 15 | 6/6 | 0 |
+| **InfiniDysk** | 22/25 | 3 | 6/6 | 0 |
+
+A *capability gap* is the number that ranks engines: entries that should stream
+and did not. `raw` is not an application and its row is not a verdict: it serves
+outer volume bytes without opening an archive, so it "wrongly serves" entries no
+player could open. That is the point of the baseline, not a defect in it.
 
 > **Comet (feat/usenet): this row is not a like-for-like result.** Comet does not complete a full-corpus pass: its engine keeps materialising after the harness has measured an entry, and under sustained load it deadlocks its own SQLite (shipped default) and does not recover. Entries after the first large materialisation failed for reasons belonging to earlier ones. Only the six status-clip failures that reproduced across independent runs are capability results.
+
+### Time to picture
+
+| App | n | Click&rarr;byte | Import | Cold TTFB | Warm TTFB |
+|---|---:|---:|---:|---:|---:|
+| **nzbdavex** | 12/12 | **2.25 s** | 1.77 s | 153 ms | 148 ms |
+| **Decypharr** | 11/12 | **4.48 s** | 4.27 s | 273 ms | 1 ms |
+| **StremThru (newz)** | 12/12 | **2.50 s** | 2.33 s | 137 ms | 136 ms |
+| **raw NNTP baseline** | 12/12 | **484 ms** | 203 ms | 266 ms | 415 ms |
+| **StreamNZB** | 12/12 | **1.72 s** | 45 ms | 1.59 s | 4 ms |
+| **nzbdav** | 12/12 | **2.00 s** | 1.89 s | 147 ms | 258 ms |
+| **AltMount** | 11/12 | **8.63 s** | 8.12 s | 477 ms | 350 ms |
+| **AIOStreams** | 12/12 | **983 ms** | 752 ms | 205 ms | 2 ms |
+| **Comet (feat/usenet)** | 8/12 | **3.59 s** | 3.35 s | 200 ms | 88 ms |
+| **InfiniDysk** | 12/12 | **3.59 s** | 3.48 s | 23 ms | 2 ms |
+
+*Click&rarr;byte* is import + cold open: what a viewer waits through after pressing
+play, and the only one of these three that is comparable. Mount-style apps
+(altmount, the nzbdav family) do their inspection at import, while addon-style apps
+(StreamNZB, AIOStreams) return a session in milliseconds and do the same work on
+first byte. *Warm TTFB* is the same open repeated, so it measures what the engine
+cached rather than what it can do cold.
+
+### Streaming and seeks
+
+| App | Seq MB/s | p05 MB/s | Full seek | Seek TTFB | Worst seek |
+|---|---:|---:|---:|---:|---:|
+| **nzbdavex** | 39.9 | **21.1** | **712 ms** | 254 ms | 349 ms |
+| **Decypharr** | 35.5 | **22.1** | **540 ms** | 293 ms | 897 ms |
+| **StremThru (newz)** | 26.7 | **14.3** | **817 ms** | 398 ms | 513 ms |
+| **raw NNTP baseline** | 35.9 | **26.9** | **450 ms** | 338 ms | 439 ms |
+| **StreamNZB** | 38.6 | **23.3** | **661 ms** | 258 ms | 622 ms |
+| **nzbdav** | 37.6 | **20.6** | **697 ms** | 382 ms | 605 ms |
+| **AltMount** | 31.9 | **22.7** | **1.02 s** | 585 ms | 831 ms |
+| **AIOStreams** | 43.4 | **20.8** | **617 ms** | 510 ms | 703 ms |
+| **Comet (feat/usenet)** | 17.6 | **5.5** | **1.38 s** | 442 ms | 1.15 s |
+| **InfiniDysk** | 12.4 | **2.4** | **1.15 s** | 19 ms | 28 ms |
+
+*p05 MB/s* is the 5th-percentile one-second windowed rate, which is what a player
+actually feels: a mean rate hides a stall that a p05 does not.
+
+*Full seek* is the median time to complete a whole seek read, acknowledgement plus
+transfer, rather than the moment the first byte appears. An engine that answers a
+Range immediately and then feeds the body slowly wins *Seek TTFB* and loses this
+column, and this column is the one a player waits through. Where the two disagree,
+believe this one.
+
+### Cost on the box
+
+| App | CPU s/GiB | Idle RSS | RSS/item | Peak RSS | over | Drift | After idle |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| **nzbdavex** | 35.0 | 136 MiB | **514 MiB** | 849 MiB | 30 entries | +4 MiB | 412 MiB |
+| **Decypharr** | 29.1 | 41 MiB | **435 MiB** | 1574 MiB | 31 entries | +1168 MiB | 1562 MiB |
+| **StremThru (newz)** | 37.2 | 83 MiB | **876 MiB** | 2037 MiB | 31 entries | +533 MiB | 997 MiB |
+| **raw NNTP baseline** | 23.6 | 517 MiB | **679 MiB** | 850 MiB | 30 entries | +48 MiB | 654 MiB |
+| **StreamNZB** | 6.2 | 50 MiB | **535 MiB** | 611 MiB | 28 entries | -5 MiB | 532 MiB |
+| **nzbdav** | 17.4 | 118 MiB | **308 MiB** | 449 MiB | 31 entries | +26 MiB | 298 MiB |
+| **AltMount** | 6.8 | 34 MiB | **745 MiB** | 1949 MiB | 31 entries | +738 MiB | 968 MiB |
+| **AIOStreams** | 7.6 | 225 MiB | **558 MiB** | 1090 MiB | 29 entries | +399 MiB | 897 MiB |
+| **Comet (feat/usenet)** | 53.7 | 268 MiB | **860 MiB** | 3458 MiB | 21 entries | +747 MiB | — |
+| **InfiniDysk** | 25.3 | 164 MiB | **976 MiB** | 1569 MiB | 31 entries | +625 MiB | 1522 MiB |
+
+*CPU s/GiB* is CPU-seconds consumed per GiB delivered, the fair efficiency
+comparison, since raw CPU% is meaningless at different throughputs. It is taken
+over the shared population; every memory column is taken over the whole session.
+
+*RSS/item* is the median of the per-entry peaks and is the comparable number.
+*Peak RSS* is the highest single-entry peak in the run: **not representative of**
+**real-world usage**, since it is a high-water mark reached once, but it is the
+number that decides whether the application fits in the RAM you have. Read it with
+the *over* column beside it, which says how many entries the peak was taken over:
+a run-wide peak rewards failing early, and an application that survived 21 entries
+had fewer chances to spike than one that survived 31.
+
+*Drift* is the median per-entry peak over the last third of the run minus the
+first third. Every application here holds more memory the longer it runs, and this
+states how much rather than letting it inflate the headline. It is measured with no
+idle gap between entries, which is the harshest case: applications that release on
+idle never get the chance to. *After idle* is the median footprint once the work
+stops but before the process is killed, which is where that memory goes back.
+
+The memory columns are taken over every measured entry, including failed ones,
+since a failure still occupies a position in the session. Entries merged from
+another run are excluded, because their footprint is another process's.
 
 > **`runtime: docker` rows were measured in a container, not on this host.**
 > Decypharr, Comet (feat/usenet) are not buildable natively here, so they were run
@@ -75,103 +191,16 @@ negative tiers are excluded here and reported separately below.
 > Compare container rows with each other freely. Against a native row, read them as
 > indicative: a container row that is slower is not proof the application is.
 
-### Like-for-like
-
-The same 6 entries for every application, the ones all of them
-served, so these medians are directly comparable. Median post size here is
-17.1 GiB.
-
-| App | Click&rarr;byte | Import | Cold TTFB | Seq MB/s | p05 MB/s | CPU s/GiB | vs its own-set click&rarr;byte |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| nzbdavex | 2.16 s | 1.72 s | 153 ms | 39.9 | 17.3 | 32.5 | 0.77× |
-| Decypharr | 6.59 s | 6.18 s | 335 ms | 32.7 | 9.6 | 29.6 | 0.68× |
-| StremThru (newz) | 2.71 s | 2.55 s | 126 ms | 24.1 | 17.7 | 61.5 | 0.66× |
-| raw NNTP baseline | 454 ms | 175 ms | 207 ms | 35.9 | 26.6 | 17.6 | 0.91× |
-| StreamNZB | 1.47 s | 64 ms | 1.33 s | 41.6 | 27.4 | 6.9 | 0.91× |
-| nzbdav | 1.83 s | 1.72 s | 147 ms | 38.9 | 23.5 | 16.6 | 0.54× |
-| AltMount | 8.48 s | 7.94 s | 514 ms | 34.1 | 24.8 | 5.7 | 0.71× |
-| AIOStreams | 911 ms | 600 ms | 229 ms | 42.5 | 12.8 | 7.0 | 0.76× |
-| Comet (feat/usenet) | 3.59 s | 3.35 s | 210 ms | 19.3 | 6.9 | 51.7 | 0.93× |
-| InfiniDysk | 4.17 s | 4.08 s | 27 ms | 14.4 | 2.8 | 27.1 | 0.92× |
-
-The last column is the size of the distortion. A value near `1.00×` means the
-application's own-set median was already effectively this population, which is
-what you see from an application whose successes *are* the easy entries. Values
-well below `1.00×` belong to applications whose own median was dragged up by
-large entries the others never attempted.
-
-Entries: `plain-medium`, `rar-stored-movie`, `rar4-inner-obfuscated`, `7z-plain-header`, `7z-plain-large`, `7z-split-compressed-header`.
-
-This set is bounded by the *weakest* application, so it is small and skews toward
-easier content. Neither table is the whole answer: the one above rewards breadth
-and penalises nothing, this one compares fairly on a narrow slice. Read them with
-the capability matrix.
-
-### Correctness breakdown
-
-*Correct* is not *served*. Six corpus entries are built to be unservable: three
-`negative` (compressed archives, no password) and three `failure` (dead post,
-severe damage, missing volumes). Refusing those is the right answer, and serving
-one means emitting bytes that cannot be the media, which is a worse result than
-refusing, not a better one.
-
-| App | Served (of 25 servable) | Capability gaps | Correctly rejected | **Wrongly served** |
-|---|---:|---:|---:|---:|
-| nzbdavex | 23/25 | 2 | 5/6 | **1** |
-| Decypharr | 18/25 | 7 | 5/6 | **1** |
-| StremThru (newz) | 21/25 | 4 | 6/6 | 0 |
-| raw NNTP baseline | 25/25 | 0 | 1/6 | **5** |
-| StreamNZB | 16/25 | 9 | 5/6 | **1** |
-| nzbdav | 22/25 | 3 | 5/6 | **1** |
-| AltMount | 18/25 | 7 | 5/6 | **1** |
-| AIOStreams | 25/25 | 0 | 5/6 | **1** |
-| Comet (feat/usenet) | 10/25 | 15 | 6/6 | 0 |
-| InfiniDysk | 22/25 | 3 | 6/6 | 0 |
-
-`raw` is not an application and its row here is not a verdict: it serves outer
-volume bytes without opening an archive, so it "wrongly serves" entries no player
-could open. That is the point of the baseline, not a defect in it.
-
-A *capability gap* is the number that ranks engines: entries that should stream
-and did not.
-
-*Click&rarr;byte* is import + cold open: what a viewer waits through after pressing
-play. Compare **that**, not import alone: mount-style apps (altmount, the nzbdav
-family) do their inspection at import, while addon-style apps (StreamNZB,
-AIOStreams) return a session in milliseconds and do the same work on first byte.
-
-*CPU s/GiB* is CPU-seconds consumed per GiB delivered, the fair efficiency
-comparison, since raw CPU% is meaningless at different throughputs.
-
-*RSS/item* is the median of the per-entry peaks, not a peak across the whole run.
-A run-wide peak is a high-water mark over however many entries an application
-survived, so it rewards failing early; the per-item median is comparable.
-
-*RSS drift* is the median per-entry peak over the last third of the run minus the
-first third. Every application here holds more memory the longer it runs, and this
-states how much rather than letting it inflate the headline. It is measured with no
-idle gap between entries, which is the harshest case: applications that release on
-idle never get the chance to. *After idle* is the median footprint once the work
-stops but before the process is killed, which is where that memory goes back.
-
-Both are taken over every measured entry, including failed ones, since a failure
-still occupies a position in the session. Entries merged from another run are
-excluded from these two columns because their footprint is another process's.
-
-*p05 MB/s* is the 5th-percentile one-second windowed rate. An engine can ack a
-range in single-digit milliseconds and still stall behind it, so read TTFB and
-p05 together.
-
-*Full seek* is what that costs in practice: the median time to complete a whole
-seek read, acknowledgement plus transfer, rather than the moment the first byte
-appears. An engine that answers a Range immediately and then feeds the body slowly
-wins *Seek TTFB* and loses this column, and this column is the one a player waits
-through. Where the two disagree, believe this one.
-
 ## Capability matrix
 
-Whether each application could serve each corpus entry at all. `negative` entries
-are expected to fail; what matters there is that the failure is quick and explicit.
+Every entry scored against what it is supposed to do, not against its status code.
+
+| | |
+|---|---|
+| `pass` | should stream, and did |
+| **`FAIL`** | should stream, and did not |
+| `refused` | unservable, and was refused |
+| **`served`** | unservable, and bytes came back anyway |
 
 > **The `raw` column is not a capability claim.** It streams the outer volume
 > bytes without opening the archive, so it "passes" encrypted and obfuscated
@@ -181,37 +210,37 @@ are expected to fail; what matters there is that the failure is quick and explic
 
 | Entry | Tier | nzbdavex | Decypharr | StremThru (newz) | raw NNTP baseline | StreamNZB | nzbdav | AltMount | AIOStreams | Comet (feat/usenet) | InfiniDysk |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| `plain-small` | smoke | pass | pass | pass | pass | pass | pass | pass | pass | FAIL | pass |
-| `rar-named-small` | smoke | pass | pass | pass | pass | pass | pass | FAIL | pass | pass | pass |
-| `rar-hdrenc-small` | smoke | FAIL | FAIL | FAIL | pass | pass | FAIL | FAIL | pass | FAIL | FAIL |
-| `7z-obfuscated-small` | smoke | pass | FAIL | pass | pass | FAIL | pass | pass | pass | FAIL | pass |
+| `plain-small` | smoke | pass | pass | pass | pass | pass | pass | pass | pass | **FAIL** | pass |
+| `rar-named-small` | smoke | pass | pass | pass | pass | pass | pass | **FAIL** | pass | pass | pass |
+| `rar-hdrenc-small` | smoke | **FAIL** | **FAIL** | **FAIL** | pass | pass | **FAIL** | **FAIL** | pass | **FAIL** | **FAIL** |
+| `7z-obfuscated-small` | smoke | pass | **FAIL** | pass | pass | **FAIL** | pass | pass | pass | **FAIL** | pass |
 | `plain-medium` | core | pass | pass | pass | pass | pass | pass | pass | pass | pass | pass |
-| `plain-season-pack` | core | pass | FAIL | pass | pass | pass | pass | pass | pass | pass | pass |
+| `plain-season-pack` | core | pass | **FAIL** | pass | pass | pass | pass | pass | pass | pass | pass |
 | `rar-stored-movie` | core | pass | pass | pass | pass | pass | pass | pass | pass | pass | pass |
-| `rar4-stored` | core | pass | pass | FAIL | pass | pass | FAIL | FAIL | pass | FAIL | FAIL |
+| `rar4-stored` | core | pass | pass | **FAIL** | pass | pass | **FAIL** | **FAIL** | pass | **FAIL** | **FAIL** |
 | `rar4-inner-obfuscated` | core | pass | pass | pass | pass | pass | pass | pass | pass | pass | pass |
-| `rar-identity-grouped` | core | pass | pass | pass | pass | pass | pass | pass | pass | FAIL | pass |
-| `rar4-obfuscated-volumes` | core | pass | pass | pass | pass | pass | pass | pass | pass | FAIL | pass |
-| `rar-numeric-extensions` | core | pass | pass | pass | pass | FAIL | pass | FAIL | pass | pass | pass |
+| `rar-identity-grouped` | core | pass | pass | pass | pass | pass | pass | pass | pass | **FAIL** | pass |
+| `rar4-obfuscated-volumes` | core | pass | pass | pass | pass | pass | pass | pass | pass | **FAIL** | pass |
+| `rar-numeric-extensions` | core | pass | pass | pass | pass | **FAIL** | pass | **FAIL** | pass | pass | pass |
 | `7z-plain-header` | core | pass | pass | pass | pass | pass | pass | pass | pass | pass | pass |
 | `7z-plain-large` | core | pass | pass | pass | pass | pass | pass | pass | pass | pass | pass |
 | `7z-split-compressed-header` | core | pass | pass | pass | pass | pass | pass | pass | pass | pass | pass |
-| `7z-header-encrypted` | core | pass | FAIL | pass | pass | FAIL | pass | pass | pass | pass | pass |
-| `rar-hdrenc-large` | core | pass | FAIL | pass | pass | pass | pass | FAIL | pass | FAIL | pass |
-| `rar-hdrenc-obfuscated` | core | pass | FAIL | FAIL | pass | FAIL | pass | pass | pass | FAIL | pass |
-| `7z-obfuscated-large` | core | FAIL | pass | FAIL | pass | FAIL | FAIL | pass | pass | FAIL | FAIL |
-| `7z-obfuscated-hotd` | core | pass | FAIL | pass | pass | FAIL | pass | pass | pass | FAIL | pass |
-| `rar-nested-iso` | core | pass | pass | pass | pass | FAIL | pass | FAIL | pass | FAIL | pass |
-| `rar-inner-tree` | core | pass | pass | pass | pass | FAIL | pass | FAIL | pass | FAIL | pass |
-| `rar-season-pack` | core | pass | pass | pass | pass | pass | pass | pass | pass | FAIL | pass |
-| `rar4-compressed` | negative | FAIL | FAIL | FAIL | pass | FAIL | FAIL | FAIL | FAIL | FAIL | FAIL |
-| `rar5-mixed-compressed` | negative | FAIL | FAIL | FAIL | pass | FAIL | FAIL | FAIL | FAIL | FAIL | FAIL |
-| `rar-encrypted-no-password` | negative | FAIL | FAIL | FAIL | pass | FAIL | FAIL | FAIL | FAIL | FAIL | FAIL |
-| `huge-direct-pack` | stress | pass | pass | pass | pass | FAIL | pass | pass | pass | FAIL | pass |
-| `damaged-partial` | failure | pass | pass | pass | pass | pass | pass | pass | pass | FAIL | pass |
-| `damaged-severe` | failure | pass | pass | FAIL | pass | pass | pass | pass | pass | FAIL | FAIL |
-| `dead-post` | failure | FAIL | FAIL | FAIL | FAIL | FAIL | FAIL | FAIL | FAIL | FAIL | FAIL |
-| `incomplete-archive-set` | failure | FAIL | FAIL | FAIL | pass | FAIL | FAIL | FAIL | FAIL | FAIL | FAIL |
+| `7z-header-encrypted` | core | pass | **FAIL** | pass | pass | **FAIL** | pass | pass | pass | pass | pass |
+| `rar-hdrenc-large` | core | pass | **FAIL** | pass | pass | pass | pass | **FAIL** | pass | **FAIL** | pass |
+| `rar-hdrenc-obfuscated` | core | pass | **FAIL** | **FAIL** | pass | **FAIL** | pass | pass | pass | **FAIL** | pass |
+| `7z-obfuscated-large` | core | **FAIL** | pass | **FAIL** | pass | **FAIL** | **FAIL** | pass | pass | **FAIL** | **FAIL** |
+| `7z-obfuscated-hotd` | core | pass | **FAIL** | pass | pass | **FAIL** | pass | pass | pass | **FAIL** | pass |
+| `rar-nested-iso` | core | pass | pass | pass | pass | **FAIL** | pass | **FAIL** | pass | **FAIL** | pass |
+| `rar-inner-tree` | core | pass | pass | pass | pass | **FAIL** | pass | **FAIL** | pass | **FAIL** | pass |
+| `rar-season-pack` | core | pass | pass | pass | pass | pass | pass | pass | pass | **FAIL** | pass |
+| `rar4-compressed` | negative | refused | refused | refused | **served** | refused | refused | refused | refused | refused | refused |
+| `rar5-mixed-compressed` | negative | refused | refused | refused | **served** | refused | refused | refused | refused | refused | refused |
+| `rar-encrypted-no-password` | negative | refused | refused | refused | **served** | refused | refused | refused | refused | refused | refused |
+| `huge-direct-pack` | stress | pass | pass | pass | pass | **FAIL** | pass | pass | pass | **FAIL** | pass |
+| `damaged-partial` | failure | pass | pass | pass | pass | pass | pass | pass | pass | **FAIL** | pass |
+| `damaged-severe` | failure | **served** | **served** | refused | **served** | **served** | **served** | **served** | **served** | refused | refused |
+| `dead-post` | failure | refused | refused | refused | refused | refused | refused | refused | refused | refused | refused |
+| `incomplete-archive-set` | failure | refused | refused | refused | **served** | refused | refused | refused | refused | refused | refused |
 
 ## Byte-identity cross-check
 
@@ -288,6 +317,13 @@ upstream, and the only honest reading of that is reconstruction or substitution.
 
 `nzbdavex` · C# (.NET 10) · version `312d3bc` · serving: webdav · runtime: source · startup 3.38 s
 
+**Own set**: 22 entries, median post 26.3 GiB · click&rarr;byte 2.81 s (shared population: 2.25 s, 0.80×) · seq 38.3 MB/s · CPU 36.8 s/GiB
+
+Medians over the entries *this application served*, so they are not comparable
+across rows. Import and click&rarr;byte scale with post size, so an application
+that fails the large entries is credited with the fast medians of the small ones
+it survived; the multiplier is the size of that distortion.
+
 | Entry | Import | Cold TTFB | Seq MB/s | Seek TTFB | Playback p05 | To buffer | CPU s/GiB | Peak RSS | Status |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---|
 | `plain-small` | 1.79 s | 427 ms | 43.2 | 223 ms | 17.0 | 1.85 s | 51.8 | 421 MiB | ok |
@@ -314,7 +350,7 @@ upstream, and the only honest reading of that is reconstruction or substitution.
 | `rar-inner-tree` | 4.93 s | 92 ms | 36.9 | 287 ms | 12.5 | 1.85 s | 40.3 | 770 MiB | ok |
 | `rar-season-pack` | 15.32 s | 130 ms | 35.7 | 283 ms | 18.1 | 1.88 s | 52.3 | 460 MiB | ok |
 | `rar4-compressed` | — | — | — | — | — | — | — | 429 MiB | **failed** |
-| `rar5-mixed-compressed` | — | — | — | — | — | — | — | — MiB | **failed** |
+| `rar5-mixed-compressed` | — | — | — | — | — | — | — | — | **failed** |
 | `rar-encrypted-no-password` | — | — | — | — | — | — | — | 449 MiB | **failed** |
 | `huge-direct-pack` | 4.12 s | 323 ms | 42.8 | 331 ms | 28.4 | 1.65 s | 37.0 | 525 MiB | ok |
 | `damaged-partial` | 2.57 s | 589 ms | 26.0 | 434 ms | 17.5 | 1.63 s | 51.4 | 507 MiB | ok |
@@ -338,6 +374,13 @@ upstream, and the only honest reading of that is reconstruction or substitution.
 
 `decypharr` · Go · version `v2.5` (`0dd1cbb`) · serving: webdav · runtime: docker · CPU/RSS from container cgroups · startup 2.31 s
 
+**Own set**: 17 entries, median post 25.3 GiB · click&rarr;byte 9.76 s (shared population: 4.48 s, 0.46×) · seq 35.6 MB/s · CPU 30.0 s/GiB
+
+Medians over the entries *this application served*, so they are not comparable
+across rows. Import and click&rarr;byte scale with post size, so an application
+that fails the large entries is credited with the fast medians of the small ones
+it survived; the multiplier is the size of that distortion.
+
 | Entry | Import | Cold TTFB | Seq MB/s | Seek TTFB | Playback p05 | To buffer | CPU s/GiB | Peak RSS | Status |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---|
 | `plain-small` | 2.70 s | 259 ms | 34.5 | 271 ms | 26.1 | 1.36 s | 25.7 | 55 MiB | ok |
@@ -347,7 +390,7 @@ upstream, and the only honest reading of that is reconstruction or substitution.
 | `plain-medium` | 3.11 s | 273 ms | 29.9 | 467 ms | 6.9 | 1.99 s | 30.0 | 75 MiB | ok |
 | `plain-season-pack` | — | — | — | — | — | — | — | 169 MiB | **failed** |
 | `rar-stored-movie` | 9.25 s | 551 ms | 35.4 | 467 ms | 19.0 | 2.66 s | 29.9 | 192 MiB | ok |
-| `rar4-stored` | 5.15 s | 283 ms | 0.2 | 260 ms | 0.5 | 1.65 s | 109.5 | 221 MiB | ok |
+| `rar4-stored` | 5.15 s | 283 ms | 0.2† | 260 ms | 0.5 | 1.65 s | 109.5 | 221 MiB | ok |
 | `rar4-inner-obfuscated` | 3.09 s | 289 ms | 37.0 | 358 ms | 18.0 | 2.70 s | 26.9 | 196 MiB | ok |
 | `rar-identity-grouped` | 4.27 s | 213 ms | — | 336 ms | — | — | — | 209 MiB | ok |
 | `rar4-obfuscated-volumes` | 9.56 s | 195 ms | 40.1 | 204 ms | 3.6 | 2.18 s | 29.0 | 216 MiB | ok |
@@ -395,6 +438,13 @@ upstream, and the only honest reading of that is reconstruction or substitution.
 
 `stremthru` · Go · version `0.103.2` · serving: http-range · runtime: source · startup 567 ms
 
+**Own set**: 20 entries, median post 26.3 GiB · click&rarr;byte 4.07 s (shared population: 2.50 s, 0.61×) · seq 26.7 MB/s · CPU 69.8 s/GiB
+
+Medians over the entries *this application served*, so they are not comparable
+across rows. Import and click&rarr;byte scale with post size, so an application
+that fails the large entries is credited with the fast medians of the small ones
+it survived; the multiplier is the size of that distortion.
+
 | Entry | Import | Cold TTFB | Seq MB/s | Seek TTFB | Playback p05 | To buffer | CPU s/GiB | Peak RSS | Status |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---|
 | `plain-small` | 1.85 s | 72 ms | 26.7 | 374 ms | 18.9 | 2.07 s | 21.5 | 602 MiB | ok |
@@ -411,8 +461,8 @@ upstream, and the only honest reading of that is reconstruction or substitution.
 | `rar-numeric-extensions` | 7.66 s | 734 ms | 29.4 | 939 ms | 13.6 | 2.83 s | 92.2 | 876 MiB | ok |
 | `7z-plain-header` | 987 ms | 11 ms | 7.2 | 133 ms | 3.7 | 6.91 s | 81.3 | 733 MiB | ok |
 | `7z-plain-large` | 4.86 s | 146 ms | 8.3 | 289 ms | 2.8 | 5.56 s | 130.5 | 628 MiB | ok |
-| `7z-split-compressed-header` | 25.26 s | 308 ms | 3.8 | 649 ms | 2.3 | 9.04 s | 293.4 | 1243 MiB | ok |
-| `7z-header-encrypted` | 7.37 s | 49 ms | 2.3 | 557 ms | 1.8 | 10.14 s | — | 785 MiB | ok |
+| `7z-split-compressed-header` | 25.26 s | 308 ms | 3.8† | 649 ms | 2.3 | 9.04 s | 293.4 | 1243 MiB | ok |
+| `7z-header-encrypted` | 7.37 s | 49 ms | 2.3† | 557 ms | 1.8 | 10.14 s | — | 785 MiB | ok |
 | `rar-hdrenc-large` | 138.30 s | 2.35 s | 18.8 | 2.71 s | 13.6 | 4.70 s | 487.5 | 2037 MiB | ok |
 | `rar-hdrenc-obfuscated` | — | — | — | — | — | — | — | 2027 MiB | **failed** |
 | `7z-obfuscated-large` | — | — | — | — | — | — | — | 1638 MiB | **failed** |
@@ -450,17 +500,24 @@ upstream, and the only honest reading of that is reconstruction or substitution.
 
 `raw` · JavaScript (this harness) · version `harness-builtin` · serving: http-range · runtime: source · startup 3 ms
 
+**Own set**: 24 entries, median post 26.3 GiB · click&rarr;byte 497 ms (shared population: 484 ms, 0.97×) · seq 35.1 MB/s · CPU 22.0 s/GiB
+
+Medians over the entries *this application served*, so they are not comparable
+across rows. Import and click&rarr;byte scale with post size, so an application
+that fails the large entries is credited with the fast medians of the small ones
+it survived; the multiplier is the size of that distortion.
+
 | Entry | Import | Cold TTFB | Seq MB/s | Seek TTFB | Playback p05 | To buffer | CPU s/GiB | Peak RSS | Status |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---|
 | `plain-small` | 389 ms | 492 ms | 35.8 | 315 ms | 20.6 | 1.52 s | 202.4 | 648 MiB | ok |
-| `rar-named-small` | 199 ms | 188 ms | 47.3 | 335 ms | 15.2 | — | 45.6 | 645 MiB | ok |
-| `rar-hdrenc-small` | 131 ms | 353 ms | 35.3 | 341 ms | 24.0 | 1.52 s | 42.3 | 662 MiB | ok |
-| `7z-obfuscated-small` | 192 ms | 188 ms | 45.3 | 174 ms | — | — | — | 643 MiB | ok |
+| `rar-named-small` | 199 ms | 188 ms | 47.3† | 335 ms | 15.2 | — | 45.6 | 645 MiB | ok |
+| `rar-hdrenc-small` | 131 ms | 353 ms | 35.3† | 341 ms | 24.0 | 1.52 s | 42.3 | 662 MiB | ok |
+| `7z-obfuscated-small` | 192 ms | 188 ms | 45.3† | 174 ms | — | — | — | 643 MiB | ok |
 | `plain-medium` | 354 ms | 140 ms | 33.0 | 255 ms | 23.0 | 1.43 s | 17.2 | 671 MiB | ok |
 | `plain-season-pack` | 540 ms | 650 ms | 39.5 | 501 ms | 29.2 | 1.75 s | 27.4 | 717 MiB | ok |
 | `rar-stored-movie` | 195 ms | 240 ms | 36.5 | 265 ms | 22.2 | 1.19 s | 16.0 | 697 MiB | ok |
-| `rar4-stored` | 138 ms | 292 ms | 31.2 | 202 ms | — | — | — | 659 MiB | ok |
-| `rar4-inner-obfuscated` | 129 ms | 345 ms | 39.8 | 392 ms | 37.4 | 1.21 s | 34.5 | 695 MiB | ok |
+| `rar4-stored` | 138 ms | 292 ms | 31.2† | 202 ms | — | — | — | 659 MiB | ok |
+| `rar4-inner-obfuscated` | 129 ms | 345 ms | 39.8† | 392 ms | 37.4 | 1.21 s | 34.5 | 695 MiB | ok |
 | `rar-identity-grouped` | 229 ms | 310 ms | 30.1 | 338 ms | 7.4 | 2.09 s | 20.4 | 678 MiB | ok |
 | `rar4-obfuscated-volumes` | 132 ms | 214 ms | 37.4 | 408 ms | 25.1 | 1.21 s | 17.0 | 600 MiB | ok |
 | `rar-numeric-extensions` | 273 ms | 370 ms | 32.8 | 351 ms | 26.6 | 1.67 s | 19.7 | 638 MiB | ok |
@@ -475,7 +532,7 @@ upstream, and the only honest reading of that is reconstruction or substitution.
 | `rar-nested-iso` | 253 ms | 283 ms | 33.0 | 351 ms | 22.8 | 1.44 s | 23.5 | 710 MiB | ok |
 | `rar-inner-tree` | 352 ms | 151 ms | 33.6 | 371 ms | 18.0 | 1.79 s | 16.3 | 691 MiB | ok |
 | `rar-season-pack` | 210 ms | 291 ms | 34.6 | 281 ms | 31.2 | 1.53 s | 26.8 | 696 MiB | ok |
-| `rar4-compressed` | 123 ms | 184 ms | — | — | — | — | — | — MiB | ok |
+| `rar4-compressed` | 123 ms | 184 ms | — | — | — | — | — | — | ok |
 | `rar5-mixed-compressed` | 160 ms | 141 ms | — | — | — | — | — | 678 MiB | ok |
 | `rar-encrypted-no-password` | 315 ms | 464 ms | — | — | — | — | — | 648 MiB | ok |
 | `huge-direct-pack` | 903 ms | 648 ms | 35.9 | 359 ms | 28.5 | 1.39 s | 61.8 | 850 MiB | ok |
@@ -496,6 +553,13 @@ upstream, and the only honest reading of that is reconstruction or substitution.
 
 `streamnzb` · Go · version `3e79529` · serving: http-range · runtime: source · startup 1.55 s
 
+**Own set**: 15 entries, median post 8.8 GiB · click&rarr;byte 1.60 s (shared population: 1.72 s, 1.07×) · seq 38.8 MB/s · CPU 6.5 s/GiB
+
+Medians over the entries *this application served*, so they are not comparable
+across rows. Import and click&rarr;byte scale with post size, so an application
+that fails the large entries is credited with the fast medians of the small ones
+it survived; the multiplier is the size of that distortion.
+
 | Entry | Import | Cold TTFB | Seq MB/s | Seek TTFB | Playback p05 | To buffer | CPU s/GiB | Peak RSS | Status |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---|
 | `plain-small` | 10 ms | 1.83 s | 37.3 | 469 ms | 24.1 | 1.78 s | 5.9 | 535 MiB | ok |
@@ -515,16 +579,16 @@ upstream, and the only honest reading of that is reconstruction or substitution.
 | `7z-split-compressed-header` | 254 ms | 1.35 s | 29.5 | 502 ms | 15.0 | 2.85 s | 9.2 | 532 MiB | ok |
 | `7z-header-encrypted` | 26 ms | 1.29 s | — | — | — | — | — | 530 MiB | **failed** |
 | `rar-hdrenc-large` | 333 ms | 3.36 s | 41.8 | 12 ms | 37.3 | 250 ms | 22.3 | 611 MiB | ok |
-| `rar-hdrenc-obfuscated` | — | — | — | — | — | — | — | — MiB | **failed** |
+| `rar-hdrenc-obfuscated` | — | — | — | — | — | — | — | — | **failed** |
 | `7z-obfuscated-large` | 248 ms | 5.03 s | — | — | — | — | — | 530 MiB | **failed** |
 | `7z-obfuscated-hotd` | 79 ms | 5.03 s | — | — | — | — | — | 534 MiB | **failed** |
 | `rar-nested-iso` | 541 ms | 1.09 s | — | — | — | — | — | 530 MiB | **failed** |
-| `rar-inner-tree` | — | — | — | — | — | — | — | — MiB | **failed** |
+| `rar-inner-tree` | — | — | — | — | — | — | — | — | **failed** |
 | `rar-season-pack` | 337 ms | 2.02 s | 39.9 | 218 ms | 24.6 | 1.85 s | 68.3 | 537 MiB | ok |
 | `rar4-compressed` | 29 ms | 1.19 s | — | — | — | — | — | 528 MiB | **failed** |
 | `rar5-mixed-compressed` | 18 ms | 960 ms | — | — | — | — | — | 524 MiB | **failed** |
 | `rar-encrypted-no-password` | 1.10 s | 791 ms | — | — | — | — | — | 541 MiB | **failed** |
-| `huge-direct-pack` | — | — | — | — | — | — | — | — MiB | **failed** |
+| `huge-direct-pack` | — | — | — | — | — | — | — | — | **failed** |
 | `damaged-partial` | 59 ms | 1.38 s | 35.2 | 285 ms | 13.4 | 2.85 s | 98.2 | 543 MiB | ok |
 | `damaged-severe` | 204 ms | 1.41 s | — | — | — | — | — | 542 MiB | ok |
 | `dead-post` | 28 ms | 1.24 s | — | — | — | — | — | 532 MiB | **failed** |
@@ -552,6 +616,13 @@ upstream, and the only honest reading of that is reconstruction or substitution.
 ### nzbdav
 
 `nzbdav` · C# (.NET 10) · version `794948b` · serving: webdav · runtime: source · startup 3.33 s
+
+**Own set**: 21 entries, median post 27.3 GiB · click&rarr;byte 3.39 s (shared population: 2.00 s, 0.59×) · seq 37.7 MB/s · CPU 17.4 s/GiB
+
+Medians over the entries *this application served*, so they are not comparable
+across rows. Import and click&rarr;byte scale with post size, so an application
+that fails the large entries is credited with the fast medians of the small ones
+it survived; the multiplier is the size of that distortion.
 
 | Entry | Import | Cold TTFB | Seq MB/s | Seek TTFB | Playback p05 | To buffer | CPU s/GiB | Peak RSS | Status |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---|
@@ -603,6 +674,13 @@ upstream, and the only honest reading of that is reconstruction or substitution.
 ### AltMount
 
 `altmount` · Go · version `4b42c67` · serving: webdav · runtime: source · startup 554 ms
+
+**Own set**: 17 entries, median post 25.3 GiB · click&rarr;byte 11.98 s (shared population: 8.63 s, 0.72×) · seq 32.1 MB/s · CPU 6.9 s/GiB
+
+Medians over the entries *this application served*, so they are not comparable
+across rows. Import and click&rarr;byte scale with post size, so an application
+that fails the large entries is credited with the fast medians of the small ones
+it survived; the multiplier is the size of that distortion.
 
 | Entry | Import | Cold TTFB | Seq MB/s | Seek TTFB | Playback p05 | To buffer | CPU s/GiB | Peak RSS | Status |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---|
@@ -659,6 +737,13 @@ upstream, and the only honest reading of that is reconstruction or substitution.
 
 `aiostreams` · TypeScript · version `9e59c4a` · serving: http-range · runtime: source · startup 7.78 s
 
+**Own set**: 24 entries, median post 26.3 GiB · click&rarr;byte 1.20 s (shared population: 983 ms, 0.82×) · seq 43.4 MB/s · CPU 8.5 s/GiB
+
+Medians over the entries *this application served*, so they are not comparable
+across rows. Import and click&rarr;byte scale with post size, so an application
+that fails the large entries is credited with the fast medians of the small ones
+it survived; the multiplier is the size of that distortion.
+
 | Entry | Import | Cold TTFB | Seq MB/s | Seek TTFB | Playback p05 | To buffer | CPU s/GiB | Peak RSS | Status |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---|
 | `plain-small` | 1.08 s | 199 ms | 47.2 | 517 ms | 29.4 | 1.44 s | 8.8 | 386 MiB | ok |
@@ -684,9 +769,9 @@ upstream, and the only honest reading of that is reconstruction or substitution.
 | `rar-nested-iso` | 695 ms | 605 ms | 34.1 | 568 ms | 26.9 | 1.50 s | 8.3 | 786 MiB | ok |
 | `rar-inner-tree` | 2.99 s | 778 ms | 49.9 | 285 ms | 23.6 | 2.06 s | 8.1 | 834 MiB | ok |
 | `rar-season-pack` | 2.45 s | 72 ms | 42.2 | 339 ms | 31.0 | 1.86 s | 7.8 | 803 MiB | ok |
-| `rar4-compressed` | — | — | — | — | — | — | — | — MiB | **failed** |
+| `rar4-compressed` | — | — | — | — | — | — | — | — | **failed** |
 | `rar5-mixed-compressed` | — | — | — | — | — | — | — | 800 MiB | **failed** |
-| `rar-encrypted-no-password` | — | — | — | — | — | — | — | — MiB | **failed** |
+| `rar-encrypted-no-password` | — | — | — | — | — | — | — | — | **failed** |
 | `huge-direct-pack` | 2.30 s | 981 ms | 38.8 | 161 ms | 32.4 | 1.45 s | 10.8 | 1090 MiB | ok |
 | `damaged-partial` | 1.86 s | 157 ms | 45.0 | 525 ms | 33.5 | 1.77 s | 6.6 | 982 MiB | ok |
 | `damaged-severe` | 4.01 s | 389 ms | — | — | — | — | — | 910 MiB | ok |
@@ -709,6 +794,13 @@ upstream, and the only honest reading of that is reconstruction or substitution.
 
 > **Not a like-for-like result.** Comet does not complete a full-corpus pass: its engine keeps materialising after the harness has measured an entry, and under sustained load it deadlocks its own SQLite (shipped default) and does not recover. Entries after the first large materialisation failed for reasons belonging to earlier ones. Only the six status-clip failures that reproduced across independent runs are capability results.
 
+**Own set**: 10 entries, median post 17.1 GiB · click&rarr;byte 3.86 s (shared population: 3.59 s, 0.93×) · seq 18.7 MB/s · CPU 55.0 s/GiB
+
+Medians over the entries *this application served*, so they are not comparable
+across rows. Import and click&rarr;byte scale with post size, so an application
+that fails the large entries is credited with the fast medians of the small ones
+it survived; the multiplier is the size of that distortion.
+
 | Entry | Import | Cold TTFB | Seq MB/s | Seek TTFB | Playback p05 | To buffer | CPU s/GiB | Peak RSS | Status |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---|
 | `plain-small` | — | — | — | — | — | — | — | 340 MiB | **failed** |
@@ -720,7 +812,7 @@ upstream, and the only honest reading of that is reconstruction or substitution.
 | `rar-stored-movie` | 2.94 s | 201 ms | 22.2 | 435 ms | 1.3 | 5.82 s | 55.2 | 800 MiB | ok |
 | `rar4-stored` | — | — | — | — | — | — | — | 727 MiB | **failed** |
 | `rar4-inner-obfuscated` | 1.63 s | 186 ms | 13.9 | 524 ms | 2.0 | 2.19 s | 51.0 | 798 MiB | ok |
-| `rar-identity-grouped` | — | — | — | — | — | — | — | — MiB | **failed** |
+| `rar-identity-grouped` | — | — | — | — | — | — | — | — | **failed** |
 | `rar4-obfuscated-volumes` | — | — | — | — | — | — | — | 706 MiB | **failed** |
 | `rar-numeric-extensions` | 6.36 s | 1.98 s | 26.4 | 544 ms | 1.0 | 3.74 s | 67.6 | 860 MiB | ok |
 | `7z-plain-header` | 1.35 s | 219 ms | 28.5 | 450 ms | 1.0 | 2.41 s | 41.9 | 872 MiB | ok |
@@ -730,18 +822,18 @@ upstream, and the only honest reading of that is reconstruction or substitution.
 | `rar-hdrenc-large` | — | — | — | — | — | — | — | 1613 MiB | **failed** |
 | `rar-hdrenc-obfuscated` | — | — | — | — | — | — | — | 1455 MiB | **failed** |
 | `7z-obfuscated-large` | — | — | — | — | — | — | — | 1356 MiB | **failed** |
-| `7z-obfuscated-hotd` | — | — | — | — | — | — | — | — MiB | **failed** |
+| `7z-obfuscated-hotd` | — | — | — | — | — | — | — | — | **failed** |
 | `rar-nested-iso` | — | — | — | — | — | — | — | 1486 MiB | **failed** |
 | `rar-inner-tree` | — | — | — | — | — | — | — | 3458 MiB | **failed** |
 | `rar-season-pack` | — | — | — | — | — | — | — | 1567 MiB | **failed** |
-| `rar4-compressed` | — | — | — | — | — | — | — | — MiB | **failed** |
-| `rar5-mixed-compressed` | — | — | — | — | — | — | — | — MiB | **failed** |
-| `rar-encrypted-no-password` | — | — | — | — | — | — | — | — MiB | **failed** |
-| `huge-direct-pack` | — | — | — | — | — | — | — | — MiB | **failed** |
-| `damaged-partial` | — | — | — | — | — | — | — | — MiB | **failed** |
-| `damaged-severe` | — | — | — | — | — | — | — | — MiB | **failed** |
-| `dead-post` | — | — | — | — | — | — | — | — MiB | **failed** |
-| `incomplete-archive-set` | — | — | — | — | — | — | — | — MiB | **failed** |
+| `rar4-compressed` | — | — | — | — | — | — | — | — | **failed** |
+| `rar5-mixed-compressed` | — | — | — | — | — | — | — | — | **failed** |
+| `rar-encrypted-no-password` | — | — | — | — | — | — | — | — | **failed** |
+| `huge-direct-pack` | — | — | — | — | — | — | — | — | **failed** |
+| `damaged-partial` | — | — | — | — | — | — | — | — | **failed** |
+| `damaged-severe` | — | — | — | — | — | — | — | — | **failed** |
+| `dead-post` | — | — | — | — | — | — | — | — | **failed** |
+| `incomplete-archive-set` | — | — | — | — | — | — | — | — | **failed** |
 
 <details><summary>Failures (21)</summary>
 
@@ -772,6 +864,13 @@ upstream, and the only honest reading of that is reconstruction or substitution.
 ### InfiniDysk
 
 `infinidysk` · C# (.NET 10) · version `1f9f45b` · serving: webdav · runtime: source · startup 7.60 s
+
+**Own set**: 21 entries, median post 27.3 GiB · click&rarr;byte 4.52 s (shared population: 3.59 s, 0.79×) · seq 12.3 MB/s · CPU 26.5 s/GiB
+
+Medians over the entries *this application served*, so they are not comparable
+across rows. Import and click&rarr;byte scale with post size, so an application
+that fails the large entries is credited with the fast medians of the small ones
+it survived; the multiplier is the size of that distortion.
 
 | Entry | Import | Cold TTFB | Seq MB/s | Seek TTFB | Playback p05 | To buffer | CPU s/GiB | Peak RSS | Status |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---|

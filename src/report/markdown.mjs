@@ -6,7 +6,7 @@ import { describeSystem } from '../metrics/sysinfo.mjs';
 import { BY_ID } from '../adapters/index.mjs';
 
 const gb = (b) => (Number.isFinite(b) ? (b / 2 ** 30).toFixed(2) : '—');
-const mb = (b) => (Number.isFinite(b) ? (b / 2 ** 20).toFixed(0) : '—');
+const mib = (b) => (Number.isFinite(b) ? `${(b / 2 ** 20).toFixed(0)} MiB` : '—');
 const ms = (n) => (Number.isFinite(n) ? (n >= 1000 ? `${(n / 1000).toFixed(2)} s` : `${n.toFixed(0)} ms`) : '—');
 const mbps = (n) => (Number.isFinite(n) ? n.toFixed(1) : '—');
 const num = (n, d = 2) => (Number.isFinite(n) ? n.toFixed(d) : '—');
@@ -52,6 +52,8 @@ function scoreOf(item) {
   return served ? 'served' : 'capability-gap';
 }
 
+const isPerfTier = (item) => item.tier !== 'failure' && item.tier !== 'negative';
+
 /**
  * Per-app aggregate. `only` restricts the population to a fixed set of entry ids, so
  * medians can be taken over the same entries for every application.
@@ -65,9 +67,7 @@ function summarise(app, only = null) {
   // one merged run still describes a single process and is measured from those.
   const local = items.filter((i) => !i.fromRun);
   const memRows = (local.length ? local : items).map((i) => i.rssPeakBytes).filter(Number.isFinite);
-  const perf = ok
-    .filter((i) => i.tier !== 'failure' && i.tier !== 'negative')
-    .filter((i) => !only || only.has(i.id));
+  const perf = ok.filter(isPerfTier).filter((i) => !only || only.has(i.id));
   const scores = items.map(scoreOf);
   const count = (s) => scores.filter((x) => x === s).length;
   return {
@@ -86,6 +86,9 @@ function summarise(app, only = null) {
     // high-water mark over however many entries an application survived.
     rssItemMedian: med(memRows),
     rssItemN: memRows.length,
+    // Published beside `rssItemN`, since a peak is not readable without the number of
+    // entries it was taken over.
+    rssPeak: memRows.length ? Math.max(...memRows) : null,
     rssDrift: (() => {
       if (memRows.length < 6) return null;
       const k = Math.floor(memRows.length / 3);
@@ -109,6 +112,23 @@ function summarise(app, only = null) {
     playbackP05: med(perf.map((i) => i.playback?.p05MBps)),
     timeToBuffer: med(perf.map((i) => i.playback?.timeToBufferMs)),
   };
+}
+
+/**
+ * The population every headline median is taken over. A strict intersection is defined
+ * by the weakest application in the field, so one broken engine collapses the set for
+ * everybody and the set moves between runs; a quorum holds it wide and stable, and an
+ * application that missed an entry reports it as `n`.
+ */
+function quorumPopulation(ran) {
+  const universe = [...new Set(ran.flatMap((a) => (a.items ?? []).filter(isPerfTier).map((i) => i.id)))];
+  const servedBy = (id) => ran.filter((a) => (a.items ?? []).some((i) => i.id === id && i.status === 'ok')).length;
+  // 90% rounds up to the whole field at eight applications, which is the intersection
+  // this exists to avoid, so one application must always be free to miss an entry.
+  const threshold = ran.length <= 3 ? ran.length : Math.min(Math.ceil(ran.length * 0.9), ran.length - 1);
+  const ids = new Set(universe.filter((id) => servedBy(id) >= threshold));
+  const strict = universe.filter((id) => servedBy(id) === ran.length).length;
+  return { ids, threshold, strict, universe: universe.length };
 }
 
 export function renderMarkdown(results) {
@@ -164,69 +184,196 @@ export function renderMarkdown(results) {
   p(`> the middle, so read every other number relative to it.`);
   p();
 
+  const ran = results.apps.filter((a) => a.status === 'ok');
+  const notRun = results.apps.filter((a) => a.status !== 'ok');
+
+  // Provenance, not measurement, so it costs no columns in the result tables.
+  if (ran.length) {
+    p(`### Applications measured`);
+    p();
+    p(`| App | Runtime | Language | Version | Serving | Startup |`);
+    p(`|---|---|---|---|---|---:|`);
+    for (const a of ran) {
+      const version = `\`${a.version?.version ?? 'unknown'}\`${a.version?.commit ? ` (\`${a.version.commit}\`)` : ''}`;
+      p(`| **${a.displayName}** | ${a.runtime} | ${a.language} | ${version} | ${a.serving} | ${ms(a.startupMs)} |`);
+    }
+    p();
+  }
+
   // ---- run settings -----------------------------------------------------
   p(`### Run settings`);
   p();
   const c = results.config;
   p(`| Setting | Value |`);
   p(`|---|---|`);
-  p(`| Sequential read | ${mb(c.sequentialBytes)} MiB cap / ${c.sequentialMaxMs / 1000}s cap |`);
+  p(`| Sequential read | ${mib(c.sequentialBytes)} cap / ${c.sequentialMaxMs / 1000}s cap |`);
   p(`| Seek points | ${c.seekFractions.map((f) => `${(f * 100).toFixed(0)}%`).join(', ')} + backward |`);
-  p(`| Seek read | ${mb(c.seekReadBytes)} MiB |`);
+  p(`| Seek read | ${mib(c.seekReadBytes)} |`);
   p(`| Playback sim | ${c.playbackSeconds}s @ ${c.playbackBitrateMbps} Mbps |`);
   p(`| Integrity samples | ${c.integritySamples} |`);
   p(`| Item timeout | ${c.itemTimeoutMs / 1000}s |`);
   p();
 
   // ---- headline ---------------------------------------------------------
-  const ran = results.apps.filter((a) => a.status === 'ok');
-  const notRun = results.apps.filter((a) => a.status !== 'ok');
-
   p(`## Summary`);
   p();
   if (!ran.length) {
     p(`No application completed a run.`);
-  } else {
-    p(`Medians across the performance tiers (\`smoke\`, \`core\`, \`stress\`). Failure and`);
-    p(`negative tiers are excluded here and reported separately below.`);
     p();
-    // Rows from a different run, excluded from the memory columns.
-    const summaries = ran.map((a) => [a, summarise(a)]);
-    // Entries every application served: the only population on which a median means the
-    // same thing for all of them.
-    const commonIds = summaries.reduce(
-      (acc, [, s]) => (acc === null ? new Set(s.perfIds) : new Set([...acc].filter((id) => s.perfIds.includes(id)))),
-      null,
-    ) ?? new Set();
-    const gibOf = Object.fromEntries((results.corpus?.selected ?? []).map((c) => [c.id, c.postedGiB]));
+  } else {
+    const pop = quorumPopulation(ran);
+    // A shared population needs something to share it between, and a median over fewer
+    // than three entries says nothing. Failing either, rows fall back to their own sets.
+    const useQuorum = ran.length >= 2 && pop.ids.size >= 3;
+    const rows = ran.map((a) => {
+      const own = summarise(a);
+      return { a, own, cmp: useQuorum ? summarise(a, pop.ids) : own };
+    });
+
+    const gibOf = Object.fromEntries((results.corpus?.selected ?? []).map((e) => [e.id, e.postedGiB]));
     const medGiB = (ids) => med(ids.map((id) => gibOf[id]).filter(Number.isFinite));
 
-    p(`> **\`n\` and *med post* are part of the result, not footnotes.** Each row's medians`);
-    p(`> are taken over the entries *that application served*, so they are medians over`);
-    p(`> different populations. Import and click&rarr;byte scale with post size, so an`);
-    p(`> application that fails the large entries is credited with the fast medians of the`);
-    p(`> small ones it survived. Compare the like-for-like table below before ranking.`);
+    if (useQuorum) {
+      const slack = pop.threshold < ran.length;
+      p(`Every median below is taken over **the same ${pop.ids.size} entries for every**`);
+      p(`**application**: the perf-tier entries (\`smoke\`, \`core\`, \`stress\`) that ${slack ? `at least` : `all`}`);
+      p(`${slack ? `${pop.threshold} of the ` : ''}${ran.length} applications served. Median post size across that set is`);
+      p(`${num(medGiB([...pop.ids]), 1)} GiB.`);
+      p();
+      if (slack) {
+        p(`> **Why a quorum and not the entries all of them served.** That strict intersection`);
+        p(`> is ${pop.strict} entries here, and it is defined by the weakest application in the field:`);
+        p(`> one broken engine collapses the population for everybody, and the set moves between`);
+        p(`> runs as the field changes. A quorum keeps it wide and stable. Where an application`);
+        p(`> missed one of the ${pop.ids.size}, its \`n\` column says so.`);
+        p();
+      }
+      p(`Entries: ${[...pop.ids].map((id) => `\`${id}\``).join(', ')}.`);
+      p();
+    } else if (ran.length < 2) {
+      p(`One application ran, so there is nothing to hold a population against. These`);
+      p(`medians are over the ${rows[0].own.n} perf-tier entries it served.`);
+      p();
+    } else {
+      p(`Too few entries were served in common to build a shared population, so each row's`);
+      p(`medians are over **that application's own served set** and are not directly`);
+      p(`comparable. The \`n\` column is part of the result.`);
+      p();
+    }
+
+    p(`### Verdict`);
     p();
-    p(`| App | Runtime | n | Med post | Seq MB/s | p05 MB/s | Click&rarr;byte | Import | Cold TTFB | Warm TTFB | Seek TTFB | Full seek | Worst seek | CPU s/GiB | Idle RSS | RSS/item | RSS drift | After idle | Correct |`);
-    p(`|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|`);
-    for (const [a, s] of summaries) {
+    p(`*Correct* is not *served*. Six corpus entries are built to be unservable: three`);
+    p(`\`negative\` (compressed archives, no password) and three \`failure\` (dead post,`);
+    p(`severe damage, missing volumes). Refusing those is the right answer, and serving`);
+    p(`one means emitting bytes that cannot be the media, which is a worse result than`);
+    p(`refusing, not a better one.`);
+    p();
+    p(`| App | Served | Capability gaps | Correctly refused | **Wrongly served** |`);
+    p(`|---|---:|---:|---:|---:|`);
+    for (const { a, own: s } of rows) {
+      const wrong = s.wronglyServed ? `**${s.wronglyServed}**` : '0';
       p(
-        `| **${a.displayName}** | ${a.runtime} | ${s.n} | ${num(medGiB(s.perfIds), 1)} GiB | ` +
-          `${mbps(s.seqMBps)} | ${mbps(s.seqP05)} | ${ms(s.clickToByte)} | ${ms(s.importMs)} | ` +
-          `${ms(s.coldTtfb)} | ${ms(s.warmTtfb)} | ${ms(s.seekTtfb)} | ${ms(s.seekFull)} | ${ms(s.seekWorst)} | ${num(s.cpuPerGB, 1)} | ` +
-          `${mb(a.idle?.rssPeakBytes)} MiB | ${mb(s.rssItemMedian)} MiB | ` +
-          `${Number.isFinite(s.rssDrift) ? `${s.rssDrift > 0 ? '+' : ''}${mb(s.rssDrift)} MiB` : '—'} | ` +
-          `${a.idleAfter ? `${mb(a.idleAfter.rssMedianBytes)} MiB` : '—'} | ` +
-          `${s.correct}/${s.attempted} |`,
+        `| **${a.displayName}** | ${s.served}/${s.served + s.capabilityGaps} | ${s.capabilityGaps} | ` +
+          `${s.correctlyRejected}/${s.correctlyRejected + s.wronglyServed} | ${wrong} |`,
       );
     }
     p();
+    p(`A *capability gap* is the number that ranks engines: entries that should stream`);
+    p(`and did not. \`raw\` is not an application and its row is not a verdict: it serves`);
+    p(`outer volume bytes without opening an archive, so it "wrongly serves" entries no`);
+    p(`player could open. That is the point of the baseline, not a defect in it.`);
+    p();
 
-    const caveated = ran.map((a) => [a, a.caveat ?? BY_ID[a.app]?.caveat]).filter(([, c]) => c);
+    if (ran.some((a) => (a.items ?? []).some((i) => !i.expect))) {
+      p(`> This run predates per-entry expectations, so only the \`negative\` tier is`);
+      p(`> scored as reject-expected here. The three \`failure\`-tier entries that are also`);
+      p(`> unservable (\`dead-post\`, \`damaged-severe\`, \`incomplete-archive-set\`) are still`);
+      p(`> counted as gaps, which understates every application. Re-run to score fully.`);
+      p();
+    }
+
+    // A row whose failures are not its own must be qualified before its counts are read.
+    const caveated = ran.map((a) => [a, a.caveat ?? BY_ID[a.app]?.caveat]).filter(([, cv]) => cv);
     for (const [a, caveat] of caveated) {
       p(`> **${a.displayName}: this row is not a like-for-like result.** ${caveat}`);
       p();
     }
+
+    p(`### Time to picture`);
+    p();
+    p(`| App | n | Click&rarr;byte | Import | Cold TTFB | Warm TTFB |`);
+    p(`|---|---:|---:|---:|---:|---:|`);
+    for (const { a, cmp: s } of rows) {
+      const n = useQuorum ? `${s.n}/${pop.ids.size}` : `${s.n}`;
+      p(`| **${a.displayName}** | ${n} | **${ms(s.clickToByte)}** | ${ms(s.importMs)} | ${ms(s.coldTtfb)} | ${ms(s.warmTtfb)} |`);
+    }
+    p();
+    p(`*Click&rarr;byte* is import + cold open: what a viewer waits through after pressing`);
+    p(`play, and the only one of these three that is comparable. Mount-style apps`);
+    p(`(altmount, the nzbdav family) do their inspection at import, while addon-style apps`);
+    p(`(StreamNZB, AIOStreams) return a session in milliseconds and do the same work on`);
+    p(`first byte. *Warm TTFB* is the same open repeated, so it measures what the engine`);
+    p(`cached rather than what it can do cold.`);
+    p();
+
+    p(`### Streaming and seeks`);
+    p();
+    p(`| App | Seq MB/s | p05 MB/s | Full seek | Seek TTFB | Worst seek |`);
+    p(`|---|---:|---:|---:|---:|---:|`);
+    for (const { a, cmp: s } of rows) {
+      p(
+        `| **${a.displayName}** | ${mbps(s.seqMBps)} | **${mbps(s.seqP05)}** | **${ms(s.seekFull)}** | ` +
+          `${ms(s.seekTtfb)} | ${ms(s.seekWorst)} |`,
+      );
+    }
+    p();
+    p(`*p05 MB/s* is the 5th-percentile one-second windowed rate, which is what a player`);
+    p(`actually feels: a mean rate hides a stall that a p05 does not.`);
+    p();
+    p(`*Full seek* is the median time to complete a whole seek read, acknowledgement plus`);
+    p(`transfer, rather than the moment the first byte appears. An engine that answers a`);
+    p(`Range immediately and then feeds the body slowly wins *Seek TTFB* and loses this`);
+    p(`column, and this column is the one a player waits through. Where the two disagree,`);
+    p(`believe this one.`);
+    p();
+
+    p(`### Cost on the box`);
+    p();
+    p(`| App | CPU s/GiB | Idle RSS | RSS/item | Peak RSS | over | Drift | After idle |`);
+    p(`|---|---:|---:|---:|---:|---:|---:|---:|`);
+    for (const { a, own, cmp } of rows) {
+      p(
+        `| **${a.displayName}** | ${num(cmp.cpuPerGB, 1)} | ${mib(a.idle?.rssPeakBytes)} | **${mib(own.rssItemMedian)}** | ` +
+          `${mib(own.rssPeak)} | ${own.rssItemN} entries | ` +
+          `${Number.isFinite(own.rssDrift) ? `${own.rssDrift > 0 ? '+' : ''}${mib(own.rssDrift)}` : '—'} | ` +
+          `${mib(a.idleAfter?.rssMedianBytes)} |`,
+      );
+    }
+    p();
+    p(`*CPU s/GiB* is CPU-seconds consumed per GiB delivered, the fair efficiency`);
+    p(`comparison, since raw CPU% is meaningless at different throughputs. It is taken`);
+    p(`over the shared population; every memory column is taken over the whole session.`);
+    p();
+    p(`*RSS/item* is the median of the per-entry peaks and is the comparable number.`);
+    p(`*Peak RSS* is the highest single-entry peak in the run: **not representative of**`);
+    p(`**real-world usage**, since it is a high-water mark reached once, but it is the`);
+    p(`number that decides whether the application fits in the RAM you have. Read it with`);
+    p(`the *over* column beside it, which says how many entries the peak was taken over:`);
+    p(`a run-wide peak rewards failing early, and an application that survived 21 entries`);
+    p(`had fewer chances to spike than one that survived 31.`);
+    p();
+    p(`*Drift* is the median per-entry peak over the last third of the run minus the`);
+    p(`first third. Every application here holds more memory the longer it runs, and this`);
+    p(`states how much rather than letting it inflate the headline. It is measured with no`);
+    p(`idle gap between entries, which is the harshest case: applications that release on`);
+    p(`idle never get the chance to. *After idle* is the median footprint once the work`);
+    p(`stops but before the process is killed, which is where that memory goes back.`);
+    p();
+    p(`The memory columns are taken over every measured entry, including failed ones,`);
+    p(`since a failure still occupies a position in the session. Entries merged from`);
+    p(`another run are excluded, because their footprint is another process's.`);
+    p();
 
     // Which machine a row came from is part of the row.
     const containerised = ran.filter((a) => a.runtime === 'docker');
@@ -244,109 +391,7 @@ export function renderMarkdown(results) {
       p(`> indicative: a container row that is slower is not proof the application is.`);
       p();
     }
-
-    if (commonIds.size >= 3) {
-      const common = [...commonIds];
-      p(`### Like-for-like`);
-      p();
-      p(`The same ${common.length} entries for every application, the ones all of them`);
-      p(`served, so these medians are directly comparable. Median post size here is`);
-      p(`${num(medGiB(common), 1)} GiB.`);
-      p();
-      p(`| App | Click&rarr;byte | Import | Cold TTFB | Seq MB/s | p05 MB/s | CPU s/GiB | vs its own-set click&rarr;byte |`);
-      p(`|---|---:|---:|---:|---:|---:|---:|---:|`);
-      for (const [a, own] of summaries) {
-        const s = summarise(a, commonIds);
-        const shift =
-          Number.isFinite(s.clickToByte) && Number.isFinite(own.clickToByte) && own.clickToByte > 0
-            ? `${(s.clickToByte / own.clickToByte).toFixed(2)}×`
-            : '—';
-        p(
-          `| ${a.displayName} | ${ms(s.clickToByte)} | ${ms(s.importMs)} | ${ms(s.coldTtfb)} | ` +
-            `${mbps(s.seqMBps)} | ${mbps(s.seqP05)} | ${num(s.cpuPerGB, 1)} | ${shift} |`,
-        );
-      }
-      p();
-      p(`The last column is the size of the distortion. A value near \`1.00×\` means the`);
-      p(`application's own-set median was already effectively this population, which is`);
-      p(`what you see from an application whose successes *are* the easy entries. Values`);
-      p(`well below \`1.00×\` belong to applications whose own median was dragged up by`);
-      p(`large entries the others never attempted.`);
-      p();
-      p(`Entries: ${common.map((id) => `\`${id}\``).join(', ')}.`);
-      p();
-      p(`This set is bounded by the *weakest* application, so it is small and skews toward`);
-      p(`easier content. Neither table is the whole answer: the one above rewards breadth`);
-      p(`and penalises nothing, this one compares fairly on a narrow slice. Read them with`);
-      p(`the capability matrix.`);
-      p();
-    }
-    p(`### Correctness breakdown`);
-    p();
-    p(`*Correct* is not *served*. Six corpus entries are built to be unservable: three`);
-    p(`\`negative\` (compressed archives, no password) and three \`failure\` (dead post,`);
-    p(`severe damage, missing volumes). Refusing those is the right answer, and serving`);
-    p(`one means emitting bytes that cannot be the media, which is a worse result than`);
-    p(`refusing, not a better one.`);
-    p();
-    p(`| App | Served (of ${summaries[0]?.[1].served + summaries[0]?.[1].capabilityGaps || '—'} servable) | Capability gaps | Correctly rejected | **Wrongly served** |`);
-    p(`|---|---:|---:|---:|---:|`);
-    for (const [a, s] of summaries) {
-      const wrong = s.wronglyServed ? `**${s.wronglyServed}**` : '0';
-      p(
-        `| ${a.displayName} | ${s.served}/${s.served + s.capabilityGaps} | ${s.capabilityGaps} | ` +
-          `${s.correctlyRejected}/${s.correctlyRejected + s.wronglyServed} | ${wrong} |`,
-      );
-    }
-    p();
-    p(`\`raw\` is not an application and its row here is not a verdict: it serves outer`);
-    p(`volume bytes without opening an archive, so it "wrongly serves" entries no player`);
-    p(`could open. That is the point of the baseline, not a defect in it.`);
-    p();
-    p(`A *capability gap* is the number that ranks engines: entries that should stream`);
-    p(`and did not.`);
-    p();
-    if (ran.some((a) => (a.items ?? []).some((i) => !i.expect))) {
-      p(`> This run predates per-entry expectations, so only the \`negative\` tier is`);
-      p(`> scored as reject-expected here. The three \`failure\`-tier entries that are also`);
-      p(`> unservable (\`dead-post\`, \`damaged-severe\`, \`incomplete-archive-set\`) are still`);
-      p(`> counted as gaps, which understates every application. Re-run to score fully.`);
-      p();
-    }
-    p(`*Click&rarr;byte* is import + cold open: what a viewer waits through after pressing`);
-    p(`play. Compare **that**, not import alone: mount-style apps (altmount, the nzbdav`);
-    p(`family) do their inspection at import, while addon-style apps (StreamNZB,`);
-    p(`AIOStreams) return a session in milliseconds and do the same work on first byte.`);
-    p();
-    p(`*CPU s/GiB* is CPU-seconds consumed per GiB delivered, the fair efficiency`);
-    p(`comparison, since raw CPU% is meaningless at different throughputs.`);
-    p();
-    p(`*RSS/item* is the median of the per-entry peaks, not a peak across the whole run.`);
-    p(`A run-wide peak is a high-water mark over however many entries an application`);
-    p(`survived, so it rewards failing early; the per-item median is comparable.`);
-    p();
-    p(`*RSS drift* is the median per-entry peak over the last third of the run minus the`);
-    p(`first third. Every application here holds more memory the longer it runs, and this`);
-    p(`states how much rather than letting it inflate the headline. It is measured with no`);
-    p(`idle gap between entries, which is the harshest case: applications that release on`);
-    p(`idle never get the chance to. *After idle* is the median footprint once the work`);
-    p(`stops but before the process is killed, which is where that memory goes back.`);
-    p();
-    p(`Both are taken over every measured entry, including failed ones, since a failure`);
-    p(`still occupies a position in the session. Entries merged from another run are`);
-    p(`excluded from these two columns because their footprint is another process's.`);
-    p();
-    p(`*p05 MB/s* is the 5th-percentile one-second windowed rate. An engine can ack a`);
-    p(`range in single-digit milliseconds and still stall behind it, so read TTFB and`);
-    p(`p05 together.`);
-    p();
-    p(`*Full seek* is what that costs in practice: the median time to complete a whole`);
-    p(`seek read, acknowledgement plus transfer, rather than the moment the first byte`);
-    p(`appears. An engine that answers a Range immediately and then feeds the body slowly`);
-    p(`wins *Seek TTFB* and loses this column, and this column is the one a player waits`);
-    p(`through. Where the two disagree, believe this one.`);
   }
-  p();
 
   if (notRun.length) {
     p(`### Not measured`);
@@ -360,10 +405,24 @@ export function renderMarkdown(results) {
   // ---- capability matrix ------------------------------------------------
   if (ran.length) {
     const ids = [...new Set(ran.flatMap((a) => a.items.map((i) => i.id)))];
+    // Scored against `expect`, not the status code: six entries are meant to fail, so a
+    // refusal there is the right answer and bytes coming back is the wrong one.
+    const glyph = {
+      served: 'pass',
+      'capability-gap': '**FAIL**',
+      'correctly-rejected': 'refused',
+      'wrongly-served': '**served**',
+    };
     p(`## Capability matrix`);
     p();
-    p(`Whether each application could serve each corpus entry at all. \`negative\` entries`);
-    p(`are expected to fail; what matters there is that the failure is quick and explicit.`);
+    p(`Every entry scored against what it is supposed to do, not against its status code.`);
+    p();
+    p(`| | |`);
+    p(`|---|---|`);
+    p(`| \`pass\` | should stream, and did |`);
+    p(`| **\`FAIL\`** | should stream, and did not |`);
+    p(`| \`refused\` | unservable, and was refused |`);
+    p(`| **\`served\`** | unservable, and bytes came back anyway |`);
     p();
     p(`> **The \`raw\` column is not a capability claim.** It streams the outer volume`);
     p(`> bytes without opening the archive, so it "passes" encrypted and obfuscated`);
@@ -377,8 +436,7 @@ export function renderMarkdown(results) {
       const tier = ran.map((a) => a.items.find((i) => i.id === id)?.tier).find(Boolean) ?? '';
       const cells = ran.map((a) => {
         const it = a.items.find((i) => i.id === id);
-        if (!it) return '·';
-        return it.status === 'ok' ? 'pass' : 'FAIL';
+        return it ? glyph[scoreOf(it)] : '·';
       });
       p(`| \`${id}\` | ${tier} | ${cells.join(' | ')} |`);
     }
@@ -394,7 +452,7 @@ export function renderMarkdown(results) {
   const entryIds = [...new Set(okApps.flatMap((a) => a.items.map((i) => i.id)))];
 
   for (const id of entryIds) {
-    const meta = results.corpus.selected.find((c) => c.id === id);
+    const meta = results.corpus.selected.find((e) => e.id === id);
     const directVideo = (meta?.axes ?? []).includes('direct-video');
 
     // Collect hash-by-offset per app, keeping only apps that produced any.
@@ -411,29 +469,29 @@ export function renderMarkdown(results) {
     if (perApp.length < 2) continue;
 
     // Consensus per offset = the hash the most applications agree on.
-    const offsets = [...new Set(perApp.flatMap((p) => [...p.map.keys()]))];
+    const offsets = [...new Set(perApp.flatMap((x) => [...x.map.keys()]))];
     const consensus = new Map();
     for (const off of offsets) {
       const tally = {};
-      for (const p of perApp) {
-        const h = p.map.get(off);
+      for (const x of perApp) {
+        const h = x.map.get(off);
         if (h) tally[h] = (tally[h] ?? 0) + 1;
       }
-      const best = Object.entries(tally).sort((x, y) => y[1] - x[1])[0];
+      const best = Object.entries(tally).sort((u, v) => v[1] - u[1])[0];
       if (best && best[1] >= 2) consensus.set(off, best[0]);
     }
     if (!consensus.size) continue;
 
-    for (const p of perApp) {
+    for (const x of perApp) {
       let agree = 0;
       let differ = 0;
       for (const [off, h] of consensus) {
-        const mine = p.map.get(off);
+        const mine = x.map.get(off);
         if (!mine) continue;
         if (mine === h) agree++;
         else differ++;
       }
-      integrityRows.push({ id, app: p.app, agree, differ, total: agree + differ, directVideo });
+      integrityRows.push({ id, app: x.app, agree, differ, total: agree + differ, directVideo });
     }
   }
 
@@ -544,46 +602,86 @@ export function renderMarkdown(results) {
   }
 
   // ---- per-app detail ---------------------------------------------------
-  p(`## Per-entry detail`);
-  p();
-  for (const a of ran) {
-    p(`### ${a.displayName}`);
+  if (ran.length) {
+    const pop = quorumPopulation(ran);
+    const useQuorum = ran.length >= 2 && pop.ids.size >= 3;
+    const gibOf = Object.fromEntries((results.corpus?.selected ?? []).map((e) => [e.id, e.postedGiB]));
+    const medGiB = (ids) => med(ids.map((id) => gibOf[id]).filter(Number.isFinite));
+
+    p(`## Per-entry detail`);
     p();
-    p(
-      `\`${a.app}\` · ${a.language} · version \`${a.version?.version ?? 'unknown'}\`` +
-        `${a.version?.commit ? ` (\`${a.version.commit}\`)` : ''} · serving: ${a.serving} · runtime: ${a.runtime}` +
-        `${a.resourceSource === 'docker' ? ' · CPU/RSS from container cgroups' : ''}` +
-        `${a.resourcesMeasured === false ? ' · CPU/RSS not measurable' : ''}` +
-        `${Number.isFinite(a.startupMs) ? ` · startup ${ms(a.startupMs)}` : ''}`,
-    );
-    p();
-    const caveat = a.caveat ?? BY_ID[a.app]?.caveat;
-    if (caveat) {
-      p(`> **Not a like-for-like result.** ${caveat}`);
+    for (const a of ran) {
+      p(`### ${a.displayName}`);
       p();
-    }
-    p(`| Entry | Import | Cold TTFB | Seq MB/s | Seek TTFB | Playback p05 | To buffer | CPU s/GiB | Peak RSS | Status |`);
-    p(`|---|---:|---:|---:|---:|---:|---:|---:|---:|---|`);
-    for (const it of a.items) {
       p(
-        `| \`${it.id}\` | ${ms(it.importMs)} | ${ms(it.coldOpen?.ttfbMs)} | ${mbps(it.sequential?.meanMBps)} | ` +
-          `${ms(it.seeks?.medianTtfbMs)} | ${mbps(it.playback?.p05MBps)} | ${ms(it.playback?.timeToBufferMs)} | ` +
-          `${num(it.cpuSecondsPerGB, 1)} | ${mb(it.rssPeakBytes)} MiB | ${it.status === 'ok' ? 'ok' : `**${it.status}**`} |`,
+        `\`${a.app}\` · ${a.language} · version \`${a.version?.version ?? 'unknown'}\`` +
+          `${a.version?.commit ? ` (\`${a.version.commit}\`)` : ''} · serving: ${a.serving} · runtime: ${a.runtime}` +
+          `${a.resourceSource === 'docker' ? ' · CPU/RSS from container cgroups' : ''}` +
+          `${a.resourcesMeasured === false ? ' · CPU/RSS not measurable' : ''}` +
+          `${Number.isFinite(a.startupMs) ? ` · startup ${ms(a.startupMs)}` : ''}`,
       );
-    }
-    p();
-    if (a.items.some((i) => i.sequential?.reliable === false)) {
-      p(`† transfer too short to measure sustained rate (the file fit in flight).`);
       p();
-    }
-    const failures = a.items.filter((i) => i.status !== 'ok');
-    if (failures.length) {
-      p(`<details><summary>Failures (${failures.length})</summary>`);
+      const caveat = a.caveat ?? BY_ID[a.app]?.caveat;
+      if (caveat) {
+        p(`> **Not a like-for-like result.** ${caveat}`);
+        p();
+      }
+
+      // Medians the summary withholds because they are not comparable across rows, with
+      // the size of the distortion beside them.
+      const own = summarise(a);
+      if (own.n) {
+        const shift =
+          useQuorum && Number.isFinite(own.clickToByte) && own.clickToByte > 0
+            ? (() => {
+                const q = summarise(a, pop.ids);
+                return Number.isFinite(q.clickToByte)
+                  ? ` (shared population: ${ms(q.clickToByte)}, ${(q.clickToByte / own.clickToByte).toFixed(2)}×)`
+                  : '';
+              })()
+            : '';
+        p(
+          `**Own set**: ${own.n} entries, median post ${num(medGiB(own.perfIds), 1)} GiB · ` +
+            `click&rarr;byte ${ms(own.clickToByte)}${shift} · seq ${mbps(own.seqMBps)} MB/s · ` +
+            `CPU ${num(own.cpuPerGB, 1)} s/GiB`,
+        );
+        p();
+        if (shift) {
+          p(`Medians over the entries *this application served*, so they are not comparable`);
+          p(`across rows. Import and click&rarr;byte scale with post size, so an application`);
+          p(`that fails the large entries is credited with the fast medians of the small ones`);
+          p(`it survived; the multiplier is the size of that distortion.`);
+          p();
+        }
+      }
+
+      p(`| Entry | Import | Cold TTFB | Seq MB/s | Seek TTFB | Playback p05 | To buffer | CPU s/GiB | Peak RSS | Status |`);
+      p(`|---|---:|---:|---:|---:|---:|---:|---:|---:|---|`);
+      for (const it of a.items) {
+        // A rate from too short a transfer is printed but marked: not a sustained rate.
+        const seq = Number.isFinite(it.sequential?.meanMBps)
+          ? `${mbps(it.sequential.meanMBps)}${it.sequential.reliable === false ? '†' : ''}`
+          : '—';
+        p(
+          `| \`${it.id}\` | ${ms(it.importMs)} | ${ms(it.coldOpen?.ttfbMs)} | ${seq} | ` +
+            `${ms(it.seeks?.medianTtfbMs)} | ${mbps(it.playback?.p05MBps)} | ${ms(it.playback?.timeToBufferMs)} | ` +
+            `${num(it.cpuSecondsPerGB, 1)} | ${mib(it.rssPeakBytes)} | ${it.status === 'ok' ? 'ok' : `**${it.status}**`} |`,
+        );
+      }
       p();
-      for (const f of failures) p(`- \`${f.id}\` (${f.tier}): ${readableError(f.error)}`);
-      p();
-      p(`</details>`);
-      p();
+      if (a.items.some((i) => i.sequential?.reliable === false && Number.isFinite(i.sequential?.meanMBps))) {
+        p(`† transfer too short to measure sustained rate (the file fit in flight).`);
+        p();
+      }
+      const failures = a.items.filter((i) => i.status !== 'ok');
+      if (failures.length) {
+        p(`<details><summary>Failures (${failures.length})</summary>`);
+        p();
+        for (const f of failures) p(`- \`${f.id}\` (${f.tier}): ${readableError(f.error)}`);
+        p();
+        p(`</details>`);
+        p();
+      }
     }
   }
 
