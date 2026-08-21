@@ -143,24 +143,55 @@ Range immediately and then feeds the body slowly wins *Seek TTFB* and loses this
 column, and this column is the one a player waits through. Where the two disagree,
 believe this one.
 
-### Cost on the box
+### CPU
 
-| App | CPU s/GiB | Idle RSS | RSS/item | Peak RSS | over | Drift | After idle |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| **nzbdavex** | 35.0 | 136 MiB | **514 MiB** | 849 MiB | 30 entries | +4 MiB | 412 MiB |
-| **Decypharr** | 29.1 | 41 MiB | **435 MiB** | 1574 MiB | 31 entries | +1168 MiB | 1562 MiB |
-| **StremThru (newz)** | 37.2 | 83 MiB | **876 MiB** | 2037 MiB | 31 entries | +533 MiB | 997 MiB |
-| **raw NNTP baseline** | 23.6 | 517 MiB | **679 MiB** | 850 MiB | 30 entries | +48 MiB | 654 MiB |
-| **StreamNZB** | 6.2 | 50 MiB | **535 MiB** | 611 MiB | 28 entries | -5 MiB | 532 MiB |
-| **nzbdav** | 17.4 | 118 MiB | **308 MiB** | 449 MiB | 31 entries | +26 MiB | 298 MiB |
-| **AltMount** | 6.8 | 34 MiB | **745 MiB** | 1949 MiB | 31 entries | +738 MiB | 968 MiB |
-| **AIOStreams** | 7.6 | 225 MiB | **558 MiB** | 1090 MiB | 29 entries | +399 MiB | 897 MiB |
-| **Comet (feat/usenet)** | 53.7 | 268 MiB | **860 MiB** | 3458 MiB | 21 entries | +747 MiB | — |
-| **InfiniDysk** | 25.3 | 164 MiB | **976 MiB** | 1569 MiB | 31 entries | +625 MiB | 1522 MiB |
+| App | CPU s/GiB | Cores (p95) | Cores (max) | Steady |
+|---|---:|---:|---:|---:|
+| **nzbdavex** | **35.0** | — | — | — |
+| **Decypharr** | **29.1** | — | — | — |
+| **StremThru (newz)** | **37.2** | — | — | — |
+| **raw NNTP baseline** | **23.6** | — | — | — |
+| **StreamNZB** | **6.2** | — | — | — |
+| **nzbdav** | **17.4** | — | — | — |
+| **AltMount** | **6.8** | — | — | — |
+| **AIOStreams** | **7.6** | — | — | — |
+| **Comet (feat/usenet)** | **53.7** | — | — | — |
+| **InfiniDysk** | **25.3** | — | — | — |
 
 *CPU s/GiB* is CPU-seconds consumed per GiB delivered, the fair efficiency
-comparison, since raw CPU% is meaningless at different throughputs. It is taken
-over the shared population; every memory column is taken over the whole session.
+comparison, since a raw percentage is meaningless at different throughputs.
+
+The other three are the shape of the draw rather than its size, which a total
+cannot express: ten CPU-seconds is a steady half core for twenty seconds or one
+core pinned for ten, and those cost a shared box differently. *Cores (p95)* is the
+level it sustains, *Cores (max)* the worst single second, and *Steady* the share of
+seconds spent at or above half the p95. A high *Steady* is an engine that hums; a
+low one with a tall *max* burns the same CPU in bursts against an idle baseline,
+which is what makes a box feel busy while the averages look calm.
+
+All three are per entry and then taken as medians, so *Cores (max)* is the typical
+worst second of an entry, not the worst second of the run. They are bounded below
+by the 1s sample interval: a shorter spike is averaged away, so these
+understate burstiness and never overstate it. Entries that finished in fewer than
+four samples carry no shape and are excluded from these three columns only.
+
+> This run predates CPU shape sampling, so the last three columns are empty.
+> Re-run to populate them.
+
+### Memory
+
+| App | Idle RSS | RSS/item | Peak RSS | over | Drift | After idle |
+|---|---:|---:|---:|---:|---:|---:|
+| **nzbdavex** | 136 MiB | **514 MiB** | 849 MiB | 30 entries | +4 MiB | 412 MiB |
+| **Decypharr** | 41 MiB | **435 MiB** | 1574 MiB | 31 entries | +1168 MiB | 1562 MiB |
+| **StremThru (newz)** | 83 MiB | **876 MiB** | 2037 MiB | 31 entries | +533 MiB | 997 MiB |
+| **raw NNTP baseline** | 517 MiB | **679 MiB** | 850 MiB | 30 entries | +48 MiB | 654 MiB |
+| **StreamNZB** | 50 MiB | **535 MiB** | 611 MiB | 28 entries | -5 MiB | 532 MiB |
+| **nzbdav** | 118 MiB | **308 MiB** | 449 MiB | 31 entries | +26 MiB | 298 MiB |
+| **AltMount** | 34 MiB | **745 MiB** | 1949 MiB | 31 entries | +738 MiB | 968 MiB |
+| **AIOStreams** | 225 MiB | **558 MiB** | 1090 MiB | 29 entries | +399 MiB | 897 MiB |
+| **Comet (feat/usenet)** | 268 MiB | **860 MiB** | 3458 MiB | 21 entries | +747 MiB | — |
+| **InfiniDysk** | 164 MiB | **976 MiB** | 1569 MiB | 31 entries | +625 MiB | 1522 MiB |
 
 *RSS/item* is the median of the per-entry peaks and is the comparable number.
 *Peak RSS* is the highest single-entry peak in the run: **not representative of**
@@ -177,9 +208,10 @@ idle gap between entries, which is the harshest case: applications that release 
 idle never get the chance to. *After idle* is the median footprint once the work
 stops but before the process is killed, which is where that memory goes back.
 
-The memory columns are taken over every measured entry, including failed ones,
-since a failure still occupies a position in the session. Entries merged from
-another run are excluded, because their footprint is another process's.
+These are taken over every measured entry, including failed ones, since a failure
+still occupies a position in the session, and over the whole session rather than
+the shared population. Entries merged from another run are excluded, because their
+footprint is another process's.
 
 > **`runtime: docker` rows were measured in a container, not on this host.**
 > Decypharr, Comet (feat/usenet) are not buildable natively here, so they were run

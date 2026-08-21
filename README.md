@@ -83,7 +83,8 @@ report explains what is and is not comparable; see
 | Seek | TTFB at 1/25/50/75/95% plus a backward seek, median and worst |
 | Throughput | sustained MB/s, p05 windowed MB/s, throughput after a seek |
 | Playback | simulated player at a target bitrate: time-to-buffer, seconds below bitrate |
-| Cost | idle RSS, per-entry RSS, run peak, drift, footprint after idle, **CPU-seconds per GiB delivered** |
+| CPU | CPU-seconds per GiB delivered, plus the shape of the draw: sustained cores, worst second, and how much of the time it sits near its peak |
+| Memory | idle RSS, per-entry RSS, run peak, drift, footprint after idle |
 | Correctness | capability matrix, byte-identity consensus across applications |
 | Damage | behaviour at a known missing article: zero-fill, truncation, or repair |
 

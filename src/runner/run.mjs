@@ -3,7 +3,7 @@
 
 import { mkdir, writeFile, readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
-import { ProcessSampler, measureIdle } from '../metrics/procmon.mjs';
+import { ProcessSampler, measureIdle, cpuShape } from '../metrics/procmon.mjs';
 import { collectSystemInfo } from '../metrics/sysinfo.mjs';
 import { redactProvider, redactSecrets } from '../config.mjs';
 import { prepareCached } from '../adapters/base.mjs';
@@ -275,11 +275,13 @@ export async function runApp({ AdapterClass, ctx, items, config, log }) {
 
       r.wallMs = +(nowMs() - itemT0).toFixed(1);
       r.cpuSeconds = cpuMeasurable ? +(sampler.mark() - cpuBefore).toFixed(3) : null;
-      const rssSlice = sampler.timeline().slice(rssMarker).map((t) => t.rss).filter((n) => n > 0);
+      const slice = sampler.timeline().slice(rssMarker);
+      const rssSlice = slice.map((t) => t.rss).filter((n) => n > 0);
       if (rssSlice.length) {
         r.rssPeakBytes = Math.max(...rssSlice);
         r.rssMeanBytes = Math.round(rssSlice.reduce((a, b) => a + b, 0) / rssSlice.length);
       }
+      if (cpuMeasurable) r.cpuShape = cpuShape(slice);
       // CPU cost normalised by bytes actually delivered.
       const delivered =
         (r.sequential?.bytes ?? 0) + (r.playback?.bytes ?? 0) + (r.coldOpen?.bytes ?? 0) + (r.warmOpen?.bytes ?? 0);

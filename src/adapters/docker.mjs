@@ -267,6 +267,7 @@ export class ContainerSampler {
           t: Date.now(),
           rss: (st.anon ?? 0) + (st.file_mapped ?? 0),
           procs: s?.pids_stats?.current ?? 0,
+          cpu: this.#cpuSeconds,
         });
       } catch {
         /* sampling must never break a run */

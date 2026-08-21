@@ -58,6 +58,35 @@ async function readLinuxProcs() {
   return out;
 }
 
+/**
+ * Shape of the CPU curve across a slice of a sampler timeline, in cores: a total cannot
+ * separate a steady half core from one pinned in bursts against an idle baseline.
+ *
+ * Bounded below by the sample interval, so it understates burstiness, never overstates it.
+ */
+export function cpuShape(samples) {
+  const cores = [];
+  for (let i = 1; i < samples.length; i++) {
+    const dt = (samples[i].t - samples[i - 1].t) / 1000;
+    const dc = samples[i].cpu - samples[i - 1].cpu;
+    if (dt > 0 && Number.isFinite(dc) && dc >= 0) cores.push(dc / dt);
+  }
+  // Fewer intervals than this describes a coincidence, not a shape.
+  if (cores.length < 4) return null;
+  const sorted = [...cores].sort((a, b) => a - b);
+  const at = (q) => sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))];
+  const p95 = at(0.95);
+  return {
+    intervals: cores.length,
+    maxCores: +sorted[sorted.length - 1].toFixed(2),
+    p95Cores: +p95.toFixed(2),
+    medianCores: +at(0.5).toFixed(2),
+    // Time near the peak, not a ratio to the median: that median is zero for an engine
+    // that idles between bursts.
+    busyFraction: p95 > 0 ? +(cores.filter((c) => c >= p95 / 2).length / cores.length).toFixed(2) : null,
+  };
+}
+
 /** Collect a PID and all its descendants from a pid->{ppid} map. */
 function descendants(procs, roots) {
   const children = new Map();
@@ -111,7 +140,7 @@ export class ProcessSampler {
       const prev = this.#cpuByPid.get(pid) ?? 0;
       if (p.cpu > prev) this.#cpuByPid.set(pid, p.cpu);
     }
-    this.#timeline.push({ t: Date.now(), rss, procs: set.size });
+    this.#timeline.push({ t: Date.now(), rss, procs: set.size, cpu: this.mark() });
   }
 
   #startPosix() {

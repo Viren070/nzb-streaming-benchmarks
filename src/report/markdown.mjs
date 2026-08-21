@@ -109,6 +109,9 @@ function summarise(app, only = null) {
     seekWorst: med(perf.map((i) => i.seeks?.worstTtfbMs)),
     seekFull: med(perf.map((i) => seekCompletionMs(i))),
     cpuPerGB: med(perf.map((i) => i.cpuSecondsPerGB)),
+    cpuP95Cores: med(perf.map((i) => i.cpuShape?.p95Cores)),
+    cpuMaxCores: med(perf.map((i) => i.cpuShape?.maxCores)),
+    cpuBusy: med(perf.map((i) => i.cpuShape?.busyFraction)),
     playbackP05: med(perf.map((i) => i.playback?.p05MBps)),
     timeToBuffer: med(perf.map((i) => i.playback?.timeToBufferMs)),
   };
@@ -338,22 +341,52 @@ export function renderMarkdown(results) {
     p(`believe this one.`);
     p();
 
-    p(`### Cost on the box`);
+    p(`### CPU`);
     p();
-    p(`| App | CPU s/GiB | Idle RSS | RSS/item | Peak RSS | over | Drift | After idle |`);
-    p(`|---|---:|---:|---:|---:|---:|---:|---:|`);
-    for (const { a, own, cmp } of rows) {
+    p(`| App | CPU s/GiB | Cores (p95) | Cores (max) | Steady |`);
+    p(`|---|---:|---:|---:|---:|`);
+    for (const { a, cmp } of rows) {
       p(
-        `| **${a.displayName}** | ${num(cmp.cpuPerGB, 1)} | ${mib(a.idle?.rssPeakBytes)} | **${mib(own.rssItemMedian)}** | ` +
+        `| **${a.displayName}** | **${num(cmp.cpuPerGB, 1)}** | ${num(cmp.cpuP95Cores, 1)} | ${num(cmp.cpuMaxCores, 1)} | ` +
+          `${Number.isFinite(cmp.cpuBusy) ? `${(cmp.cpuBusy * 100).toFixed(0)}%` : '—'} |`,
+      );
+    }
+    p();
+    p(`*CPU s/GiB* is CPU-seconds consumed per GiB delivered, the fair efficiency`);
+    p(`comparison, since a raw percentage is meaningless at different throughputs.`);
+    p();
+    p(`The other three are the shape of the draw rather than its size, which a total`);
+    p(`cannot express: ten CPU-seconds is a steady half core for twenty seconds or one`);
+    p(`core pinned for ten, and those cost a shared box differently. *Cores (p95)* is the`);
+    p(`level it sustains, *Cores (max)* the worst single second, and *Steady* the share of`);
+    p(`seconds spent at or above half the p95. A high *Steady* is an engine that hums; a`);
+    p(`low one with a tall *max* burns the same CPU in bursts against an idle baseline,`);
+    p(`which is what makes a box feel busy while the averages look calm.`);
+    p();
+    p(`All three are per entry and then taken as medians, so *Cores (max)* is the typical`);
+    p(`worst second of an entry, not the worst second of the run. They are bounded below`);
+    p(`by the ${(results.config?.sampleIntervalMs ?? 1000) / 1000}s sample interval: a shorter spike is averaged away, so these`);
+    p(`understate burstiness and never overstate it. Entries that finished in fewer than`);
+    p(`four samples carry no shape and are excluded from these three columns only.`);
+    p();
+    if (!ran.some((a) => (a.items ?? []).some((i) => i.cpuShape))) {
+      p(`> This run predates CPU shape sampling, so the last three columns are empty.`);
+      p(`> Re-run to populate them.`);
+      p();
+    }
+
+    p(`### Memory`);
+    p();
+    p(`| App | Idle RSS | RSS/item | Peak RSS | over | Drift | After idle |`);
+    p(`|---|---:|---:|---:|---:|---:|---:|`);
+    for (const { a, own } of rows) {
+      p(
+        `| **${a.displayName}** | ${mib(a.idle?.rssPeakBytes)} | **${mib(own.rssItemMedian)}** | ` +
           `${mib(own.rssPeak)} | ${own.rssItemN} entries | ` +
           `${Number.isFinite(own.rssDrift) ? `${own.rssDrift > 0 ? '+' : ''}${mib(own.rssDrift)}` : '—'} | ` +
           `${mib(a.idleAfter?.rssMedianBytes)} |`,
       );
     }
-    p();
-    p(`*CPU s/GiB* is CPU-seconds consumed per GiB delivered, the fair efficiency`);
-    p(`comparison, since raw CPU% is meaningless at different throughputs. It is taken`);
-    p(`over the shared population; every memory column is taken over the whole session.`);
     p();
     p(`*RSS/item* is the median of the per-entry peaks and is the comparable number.`);
     p(`*Peak RSS* is the highest single-entry peak in the run: **not representative of**`);
@@ -370,9 +403,10 @@ export function renderMarkdown(results) {
     p(`idle never get the chance to. *After idle* is the median footprint once the work`);
     p(`stops but before the process is killed, which is where that memory goes back.`);
     p();
-    p(`The memory columns are taken over every measured entry, including failed ones,`);
-    p(`since a failure still occupies a position in the session. Entries merged from`);
-    p(`another run are excluded, because their footprint is another process's.`);
+    p(`These are taken over every measured entry, including failed ones, since a failure`);
+    p(`still occupies a position in the session, and over the whole session rather than`);
+    p(`the shared population. Entries merged from another run are excluded, because their`);
+    p(`footprint is another process's.`);
     p();
 
     // Which machine a row came from is part of the row.
