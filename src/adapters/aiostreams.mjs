@@ -120,22 +120,16 @@ export default class AioStreamsAdapter extends Adapter {
     await this.#clearLibrary();
   }
 
-  /** Remove every imported NZB, so a reused database still starts with an empty library. */
+  /**
+   * Remove every imported NZB, so a reused database still starts with an empty library.
+   * The batch endpoint clears the whole table, where paging the list could not reach
+   * past its own page size.
+   */
   async #clearLibrary() {
-    const res = await fetch(`${this.base}/api/v1/dashboard/usenet/library?limit=500&status=all`, {
+    await fetch(`${this.base}/api/v1/dashboard/usenet/library`, {
+      method: 'DELETE',
       headers: this.#headers,
-    }).catch(() => null);
-    if (!res?.ok) return;
-    const entries = (await res.json().catch(() => ({})))?.data?.entries ?? [];
-    for (const e of entries) {
-      const hash = e.nzbHash ?? e.hash;
-      if (!hash) continue;
-      await fetch(`${this.base}/api/v1/dashboard/usenet/library/${hash}`, {
-        method: 'DELETE',
-        headers: this.#headers,
-      }).catch(() => {});
-    }
-    if (entries.length) this.clearedOnStart = entries.length;
+    }).catch(() => {});
   }
 
   /**
