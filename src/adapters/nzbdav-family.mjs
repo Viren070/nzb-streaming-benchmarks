@@ -13,6 +13,7 @@
 import { join } from 'node:path';
 import { mkdir } from 'node:fs/promises';
 import { Adapter, run, gitDescribe, postMultipart } from './base.mjs';
+import { bashEnv } from './toolchain.mjs';
 import { waitFor, waitForHttp, Fatal } from '../metrics/http.mjs';
 
 const API_KEY = 'benchmark-internal-key';
@@ -59,7 +60,8 @@ export class NzbdavFamilyAdapter extends Adapter {
         label: `${this.id} dotnet publish`,
         timeout: 2400000,
         // MSBuild otherwise leaves worker daemons resident on a machine being measured.
-        env: { MSBUILDDISABLENODEREUSE: '1' },
+        // A native-dependency target in this tree shells out to bash.
+        env: { MSBUILDDISABLENODEREUSE: '1', ...(await bashEnv()) },
       },
     );
   }

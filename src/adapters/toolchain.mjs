@@ -61,6 +61,15 @@ const CANDIDATES = {
   node: isWin
     ? [join(HOME, 'scoop', 'shims', 'node.exe'), 'C:/Program Files/nodejs/node.exe']
     : ['/usr/bin/node', '/usr/local/bin/node'],
+  // `bash.exe` on PATH under Windows is the WSL launcher, which fails outright without
+  // an installed distro, so the real shell has to be found where Git puts it.
+  bash: isWin
+    ? [
+        join(HOME, 'scoop', 'apps', 'git', 'current', 'bin', 'bash.exe'),
+        'C:/Program Files/Git/bin/bash.exe',
+        'C:/Program Files (x86)/Git/bin/bash.exe',
+      ]
+    : ['/bin/bash', '/usr/bin/bash'],
   npm: isWin
     ? [
         join(HOME, 'scoop', 'shims', 'npm.cmd'),
@@ -180,6 +189,19 @@ export async function cgoEnv() {
     CC: gcc,
     PATH: `${dir}${sep}${process.env.PATH ?? ''}`,
   };
+}
+
+/**
+ * PATH with a working POSIX shell ahead of whatever `bash` would otherwise resolve to,
+ * for build steps that shell out to one. Best-effort: a build that never calls bash
+ * must not fail because none was found.
+ */
+export async function bashEnv() {
+  const bash = await resolveTool('bash').catch(() => null);
+  if (!bash) return {};
+  const dir = bash.replace(/[/\\][^/\\]+$/, '');
+  const sep = isWin ? ';' : ':';
+  return { PATH: `${dir}${sep}${process.env.PATH ?? ''}` };
 }
 
 /** Best-effort version string for the run report. */
