@@ -1,9 +1,9 @@
 # NZB streaming benchmark
 
-**Run** `2026-08-21T17-46-48-437Z` · started 2026-08-21T17:46:48.437Z · finished 2026-08-21T20:21:55.190Z
+**Run** `2026-08-22T13-02-13-756Z` · started 2026-08-22T13:02:13.756Z · finished 2026-08-22T15:51:58.966Z
 
 > **Merged run.** **altmount**: all 31 entries came from a separate pass
-> (`2026-08-21T20-24-41-903Z`, 2026-08-21T20:24:41.904Z) and were merged in. Those rows saw the provider at a
+> (`2026-08-22T15-54-06-755Z`, 2026-08-22T15:54:06.755Z) and were merged in. Those rows saw the provider at a
 > different time from the rest, so compare them with that in mind.
 
 ## Environment
@@ -32,42 +32,41 @@ Microsoft Windows 11 Pro · AMD Ryzen 7 7800X3D 8-Core Processor (16 threads) ·
 
 | App | Runtime | Language | Version | Serving | Startup |
 |---|---|---|---|---|---:|
-| **nzbdavex** | source | C# (.NET 10) | `312d3bc` | webdav | 3.38 s |
-| **Decypharr** | docker | Go | `v2.5` (`0dd1cbb`) | webdav | 2.31 s |
-| **StremThru (newz)** | source | Go | `0.103.2` | http-range | 567 ms |
-| **raw NNTP baseline** | source | JavaScript (this harness) | `harness-builtin` | http-range | 3 ms |
-| **StreamNZB** | source | Go | `3e79529` | http-range | 1.55 s |
-| **nzbdav** | source | C# (.NET 10) | `794948b` | webdav | 3.33 s |
-| **AltMount** | source | Go | `4b42c67` | webdav | 554 ms |
-| **AIOStreams** | source | TypeScript | `9e59c4a` | http-range | 7.78 s |
-| **Comet (feat/usenet)** | docker | Python + Rust | `ed1ede7` (`ed1ede7`) | http-range | 99.64 s |
-| **InfiniDysk** | source | C# (.NET 10) | `1f9f45b` | webdav | 7.60 s |
+| **AltMount** | source | Go | `4b42c67` | webdav | 323 ms |
+| **nzbdavex** | source | C# (.NET 10) | `312d3bc` | webdav | 4.15 s |
+| **StreamNZB** | source | Go | `3e79529` | http-range | 1.23 s |
+| **StremThru (newz)** | source | Go | `0.103.2` | http-range | 2.04 s |
+| **InfiniDysk** | source | C# (.NET 10) | `1f9f45b` | webdav | 7.84 s |
+| **nzbdav** | source | C# (.NET 10) | `794948b` | webdav | 3.30 s |
+| **Decypharr** | docker | Go | `v2.5` (`0dd1cbb`) | webdav | 2.75 s |
+| **raw NNTP baseline** | source | JavaScript (this harness) | `harness-builtin` | http-range | 2 ms |
+| **AIOStreams** | source | TypeScript | `9e59c4a` | http-range | 24.30 s |
 
 ### Run settings
 
 | Setting | Value |
 |---|---|
-| Sequential read | 244 MiB cap / 8s cap |
+| Sequential read | 244 MiB cap / 30s cap |
 | Seek points | 1%, 25%, 50%, 75%, 95% + backward |
-| Seek read | 4 MiB |
-| Playback sim | 10s @ 25 Mbps |
+| Seek read | 8 MiB |
+| Playback sim | 30s @ 25 Mbps |
 | Integrity samples | 3 |
 | Item timeout | 900s |
 
 ## Summary
 
-Every median below is taken over **the same 12 entries for every**
+Every median below is taken over **the same 13 entries for every**
 **application**: the perf-tier entries (`smoke`, `core`, `stress`) that at least
-9 of the 10 applications served. Median post size across that set is
-12.5 GiB.
+8 of the 9 applications served. Median post size across that set is
+16.2 GiB.
 
 > **Why a quorum and not the entries all of them served.** That strict intersection
-> is 6 entries here, and it is defined by the weakest application in the field:
+> is 10 entries here, and it is defined by the weakest application in the field:
 > one broken engine collapses the population for everybody, and the set moves between
 > runs as the field changes. A quorum keeps it wide and stable. Where an application
-> missed one of the 12, its `n` column says so.
+> missed one of the 13, its `n` column says so.
 
-Entries: `plain-small`, `rar-named-small`, `plain-medium`, `plain-season-pack`, `rar-stored-movie`, `rar4-inner-obfuscated`, `rar-identity-grouped`, `rar4-obfuscated-volumes`, `7z-plain-header`, `7z-plain-large`, `7z-split-compressed-header`, `rar-season-pack`.
+Entries: `plain-small`, `rar-named-small`, `plain-medium`, `plain-season-pack`, `rar-stored-movie`, `rar4-inner-obfuscated`, `rar-identity-grouped`, `rar4-obfuscated-volumes`, `7z-plain-header`, `7z-plain-large`, `7z-split-compressed-header`, `rar-season-pack`, `huge-direct-pack`.
 
 ### Verdict
 
@@ -79,38 +78,34 @@ refusing, not a better one.
 
 | App | Served | Capability gaps | Correctly refused | **Wrongly served** |
 |---|---:|---:|---:|---:|
+| **AltMount** | 16/25 | 9 | 6/6 | 0 |
 | **nzbdavex** | 23/25 | 2 | 5/6 | **1** |
-| **Decypharr** | 18/25 | 7 | 5/6 | **1** |
-| **StremThru (newz)** | 21/25 | 4 | 6/6 | 0 |
-| **raw NNTP baseline** | 25/25 | 0 | 1/6 | **5** |
 | **StreamNZB** | 16/25 | 9 | 5/6 | **1** |
-| **nzbdav** | 22/25 | 3 | 5/6 | **1** |
-| **AltMount** | 18/25 | 7 | 5/6 | **1** |
-| **AIOStreams** | 25/25 | 0 | 5/6 | **1** |
-| **Comet (feat/usenet)** | 10/25 | 15 | 6/6 | 0 |
+| **StremThru (newz)** | 21/25 | 4 | 6/6 | 0 |
 | **InfiniDysk** | 22/25 | 3 | 6/6 | 0 |
+| **nzbdav** | 22/25 | 3 | 5/6 | **1** |
+| **Decypharr** | 18/25 | 7 | 5/6 | **1** |
+| **raw NNTP baseline** | 25/25 | 0 | 1/6 | **5** |
+| **AIOStreams** | 25/25 | 0 | 5/6 | **1** |
 
 A *capability gap* is the number that ranks engines: entries that should stream
 and did not. `raw` is not an application and its row is not a verdict: it serves
 outer volume bytes without opening an archive, so it "wrongly serves" entries no
 player could open. That is the point of the baseline, not a defect in it.
 
-> **Comet (feat/usenet): this row is not a like-for-like result.** Comet does not complete a full-corpus pass: its engine keeps materialising after the harness has measured an entry, and under sustained load it deadlocks its own SQLite (shipped default) and does not recover. Entries after the first large materialisation failed for reasons belonging to earlier ones. Only the six status-clip failures that reproduced across independent runs are capability results.
-
 ### Time to picture
 
 | App | n | Click&rarr;byte | Import | Cold TTFB | Warm TTFB |
 |---|---:|---:|---:|---:|---:|
-| **nzbdavex** | 12/12 | **2.25 s** | 1.77 s | 153 ms | 148 ms |
-| **Decypharr** | 11/12 | **4.48 s** | 4.27 s | 273 ms | 1 ms |
-| **StremThru (newz)** | 12/12 | **2.50 s** | 2.33 s | 137 ms | 136 ms |
-| **raw NNTP baseline** | 12/12 | **484 ms** | 203 ms | 266 ms | 415 ms |
-| **StreamNZB** | 12/12 | **1.72 s** | 45 ms | 1.59 s | 4 ms |
-| **nzbdav** | 12/12 | **2.00 s** | 1.89 s | 147 ms | 258 ms |
-| **AltMount** | 11/12 | **8.63 s** | 8.12 s | 477 ms | 350 ms |
-| **AIOStreams** | 12/12 | **983 ms** | 752 ms | 205 ms | 2 ms |
-| **Comet (feat/usenet)** | 8/12 | **3.59 s** | 3.35 s | 200 ms | 88 ms |
-| **InfiniDysk** | 12/12 | **3.59 s** | 3.48 s | 23 ms | 2 ms |
+| **AltMount** | 12/13 | **7.30 s** | 7.00 s | 340 ms | 419 ms |
+| **nzbdavex** | 13/13 | **2.03 s** | 1.81 s | 159 ms | 125 ms |
+| **StreamNZB** | 12/13 | **1.81 s** | 49 ms | 1.59 s | 4 ms |
+| **StremThru (newz)** | 13/13 | **2.10 s** | 1.95 s | 159 ms | 150 ms |
+| **InfiniDysk** | 13/13 | **2.31 s** | 2.16 s | 31 ms | 2 ms |
+| **nzbdav** | 13/13 | **1.60 s** | 1.44 s | 60 ms | 195 ms |
+| **Decypharr** | 12/13 | **10.30 s** | 10.02 s | 270 ms | 2 ms |
+| **raw NNTP baseline** | 13/13 | **532 ms** | 177 ms | 317 ms | 349 ms |
+| **AIOStreams** | 13/13 | **983 ms** | 657 ms | 208 ms | 2 ms |
 
 *Click&rarr;byte* is import + cold open: what a viewer waits through after pressing
 play, and the only one of these three that is comparable. Mount-style apps
@@ -123,16 +118,15 @@ cached rather than what it can do cold.
 
 | App | Seq MB/s | p05 MB/s | Full seek | Seek TTFB | Worst seek |
 |---|---:|---:|---:|---:|---:|
-| **nzbdavex** | 39.9 | **21.1** | **712 ms** | 254 ms | 349 ms |
-| **Decypharr** | 35.5 | **22.1** | **540 ms** | 293 ms | 897 ms |
-| **StremThru (newz)** | 26.7 | **14.3** | **817 ms** | 398 ms | 513 ms |
-| **raw NNTP baseline** | 35.9 | **26.9** | **450 ms** | 338 ms | 439 ms |
-| **StreamNZB** | 38.6 | **23.3** | **661 ms** | 258 ms | 622 ms |
-| **nzbdav** | 37.6 | **20.6** | **697 ms** | 382 ms | 605 ms |
-| **AltMount** | 31.9 | **22.7** | **1.02 s** | 585 ms | 831 ms |
-| **AIOStreams** | 43.4 | **20.8** | **617 ms** | 510 ms | 703 ms |
-| **Comet (feat/usenet)** | 17.6 | **5.5** | **1.38 s** | 442 ms | 1.15 s |
-| **InfiniDysk** | 12.4 | **2.4** | **1.15 s** | 19 ms | 28 ms |
+| **AltMount** | 39.4 | **28.9** | **869 ms** | 356 ms | 623 ms |
+| **nzbdavex** | 41.0 | **26.6** | **735 ms** | 227 ms | 345 ms |
+| **StreamNZB** | 39.3 | **25.4** | **729 ms** | 296 ms | 607 ms |
+| **StremThru (newz)** | 32.0 | **21.4** | **840 ms** | 393 ms | 499 ms |
+| **InfiniDysk** | 23.9 | **3.6** | **1.47 s** | 20 ms | 27 ms |
+| **nzbdav** | 41.1 | **25.8** | **699 ms** | 350 ms | 536 ms |
+| **Decypharr** | 40.9 | **22.7** | **652 ms** | 285 ms | 392 ms |
+| **raw NNTP baseline** | 35.9 | **26.6** | **533 ms** | 341 ms | 428 ms |
+| **AIOStreams** | 45.8 | **22.2** | **717 ms** | 512 ms | 651 ms |
 
 *p05 MB/s* is the 5th-percentile one-second windowed rate, which is what a player
 actually feels: a mean rate hides a stall that a p05 does not.
@@ -147,16 +141,15 @@ believe this one.
 
 | App | CPU s/GiB | Cores (p95) | Cores (max) | Steady |
 |---|---:|---:|---:|---:|
-| **nzbdavex** | **35.0** | — | — | — |
-| **Decypharr** | **29.1** | — | — | — |
-| **StremThru (newz)** | **37.2** | — | — | — |
-| **raw NNTP baseline** | **23.6** | — | — | — |
-| **StreamNZB** | **6.2** | — | — | — |
-| **nzbdav** | **17.4** | — | — | — |
-| **AltMount** | **6.8** | — | — | — |
-| **AIOStreams** | **7.6** | — | — | — |
-| **Comet (feat/usenet)** | **53.7** | — | — | — |
-| **InfiniDysk** | **25.3** | — | — | — |
+| **AltMount** | **4.1** | 0.2 | 0.3 | 33% |
+| **nzbdavex** | **29.8** | 1.4 | 1.6 | 69% |
+| **StreamNZB** | **5.9** | 0.4 | 0.4 | 35% |
+| **StremThru (newz)** | **17.2** | 1.3 | 2.1 | 14% |
+| **InfiniDysk** | **13.4** | 0.6 | 0.7 | 56% |
+| **nzbdav** | **13.8** | 0.7 | 1.1 | 60% |
+| **Decypharr** | **26.2** | 0.9 | 1.1 | 55% |
+| **raw NNTP baseline** | **26.2** | 0.7 | 0.7 | 85% |
+| **AIOStreams** | **5.7** | 0.5 | 0.5 | 35% |
 
 *CPU s/GiB* is CPU-seconds consumed per GiB delivered, the fair efficiency
 comparison, since a raw percentage is meaningless at different throughputs.
@@ -175,23 +168,19 @@ by the 1s sample interval: a shorter spike is averaged away, so these
 understate burstiness and never overstate it. Entries that finished in fewer than
 four samples carry no shape and are excluded from these three columns only.
 
-> This run predates CPU shape sampling, so the last three columns are empty.
-> Re-run to populate them.
-
 ### Memory
 
 | App | Idle RSS | RSS/item | Peak RSS | over | Drift | After idle |
 |---|---:|---:|---:|---:|---:|---:|
-| **nzbdavex** | 136 MiB | **514 MiB** | 849 MiB | 30 entries | +4 MiB | 412 MiB |
-| **Decypharr** | 41 MiB | **435 MiB** | 1574 MiB | 31 entries | +1168 MiB | 1562 MiB |
-| **StremThru (newz)** | 83 MiB | **876 MiB** | 2037 MiB | 31 entries | +533 MiB | 997 MiB |
-| **raw NNTP baseline** | 517 MiB | **679 MiB** | 850 MiB | 30 entries | +48 MiB | 654 MiB |
-| **StreamNZB** | 50 MiB | **535 MiB** | 611 MiB | 28 entries | -5 MiB | 532 MiB |
-| **nzbdav** | 118 MiB | **308 MiB** | 449 MiB | 31 entries | +26 MiB | 298 MiB |
-| **AltMount** | 34 MiB | **745 MiB** | 1949 MiB | 31 entries | +738 MiB | 968 MiB |
-| **AIOStreams** | 225 MiB | **558 MiB** | 1090 MiB | 29 entries | +399 MiB | 897 MiB |
-| **Comet (feat/usenet)** | 268 MiB | **860 MiB** | 3458 MiB | 21 entries | +747 MiB | — |
-| **InfiniDysk** | 164 MiB | **976 MiB** | 1569 MiB | 31 entries | +625 MiB | 1522 MiB |
+| **AltMount** | 33 MiB | **708 MiB** | 2093 MiB | 31 entries | +495 MiB | 924 MiB |
+| **nzbdavex** | 136 MiB | **498 MiB** | 834 MiB | 31 entries | -37 MiB | 427 MiB |
+| **StreamNZB** | 49 MiB | **538 MiB** | 605 MiB | 26 entries | +1 MiB | 533 MiB |
+| **StremThru (newz)** | 222 MiB | **825 MiB** | 2054 MiB | 29 entries | +604 MiB | 780 MiB |
+| **InfiniDysk** | 163 MiB | **972 MiB** | 1400 MiB | 30 entries | +503 MiB | 1242 MiB |
+| **nzbdav** | 118 MiB | **312 MiB** | 448 MiB | 30 entries | +16 MiB | 282 MiB |
+| **Decypharr** | 41 MiB | **463 MiB** | 1608 MiB | 31 entries | +1230 MiB | 1576 MiB |
+| **raw NNTP baseline** | 764 MiB | **955 MiB** | 1138 MiB | 30 entries | +77 MiB | 1003 MiB |
+| **AIOStreams** | 215 MiB | **620 MiB** | 1071 MiB | 30 entries | +343 MiB | 902 MiB |
 
 *RSS/item* is the median of the per-entry peaks and is the comparable number.
 *Peak RSS* is the highest single-entry peak in the run: **not representative of**
@@ -214,7 +203,7 @@ the shared population. Entries merged from another run are excluded, because the
 footprint is another process's.
 
 > **`runtime: docker` rows were measured in a container, not on this host.**
-> Decypharr, Comet (feat/usenet) are not buildable natively here, so they were run
+> Decypharr is not buildable natively here, so it was run
 > under Docker with `--docker`. The CPU and memory columns are real numbers, read
 > from the daemon's cgroup counters rather than guessed, but they describe a process
 > inside a Linux VM: the CPU is the VM's share of this machine, and every byte
@@ -240,39 +229,39 @@ Every entry scored against what it is supposed to do, not against its status cod
 > retrievable", which is exactly what makes it useful: a failure everywhere *except*
 > raw is an application limitation, not a dead post.
 
-| Entry | Tier | nzbdavex | Decypharr | StremThru (newz) | raw NNTP baseline | StreamNZB | nzbdav | AltMount | AIOStreams | Comet (feat/usenet) | InfiniDysk |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| `plain-small` | smoke | pass | pass | pass | pass | pass | pass | pass | pass | **FAIL** | pass |
-| `rar-named-small` | smoke | pass | pass | pass | pass | pass | pass | **FAIL** | pass | pass | pass |
-| `rar-hdrenc-small` | smoke | **FAIL** | **FAIL** | **FAIL** | pass | pass | **FAIL** | **FAIL** | pass | **FAIL** | **FAIL** |
-| `7z-obfuscated-small` | smoke | pass | **FAIL** | pass | pass | **FAIL** | pass | pass | pass | **FAIL** | pass |
-| `plain-medium` | core | pass | pass | pass | pass | pass | pass | pass | pass | pass | pass |
-| `plain-season-pack` | core | pass | **FAIL** | pass | pass | pass | pass | pass | pass | pass | pass |
-| `rar-stored-movie` | core | pass | pass | pass | pass | pass | pass | pass | pass | pass | pass |
-| `rar4-stored` | core | pass | pass | **FAIL** | pass | pass | **FAIL** | **FAIL** | pass | **FAIL** | **FAIL** |
-| `rar4-inner-obfuscated` | core | pass | pass | pass | pass | pass | pass | pass | pass | pass | pass |
-| `rar-identity-grouped` | core | pass | pass | pass | pass | pass | pass | pass | pass | **FAIL** | pass |
-| `rar4-obfuscated-volumes` | core | pass | pass | pass | pass | pass | pass | pass | pass | **FAIL** | pass |
-| `rar-numeric-extensions` | core | pass | pass | pass | pass | **FAIL** | pass | **FAIL** | pass | pass | pass |
-| `7z-plain-header` | core | pass | pass | pass | pass | pass | pass | pass | pass | pass | pass |
-| `7z-plain-large` | core | pass | pass | pass | pass | pass | pass | pass | pass | pass | pass |
-| `7z-split-compressed-header` | core | pass | pass | pass | pass | pass | pass | pass | pass | pass | pass |
-| `7z-header-encrypted` | core | pass | **FAIL** | pass | pass | **FAIL** | pass | pass | pass | pass | pass |
-| `rar-hdrenc-large` | core | pass | **FAIL** | pass | pass | pass | pass | **FAIL** | pass | **FAIL** | pass |
-| `rar-hdrenc-obfuscated` | core | pass | **FAIL** | **FAIL** | pass | **FAIL** | pass | pass | pass | **FAIL** | pass |
-| `7z-obfuscated-large` | core | **FAIL** | pass | **FAIL** | pass | **FAIL** | **FAIL** | pass | pass | **FAIL** | **FAIL** |
-| `7z-obfuscated-hotd` | core | pass | **FAIL** | pass | pass | **FAIL** | pass | pass | pass | **FAIL** | pass |
-| `rar-nested-iso` | core | pass | pass | pass | pass | **FAIL** | pass | **FAIL** | pass | **FAIL** | pass |
-| `rar-inner-tree` | core | pass | pass | pass | pass | **FAIL** | pass | **FAIL** | pass | **FAIL** | pass |
-| `rar-season-pack` | core | pass | pass | pass | pass | pass | pass | pass | pass | **FAIL** | pass |
-| `rar4-compressed` | negative | refused | refused | refused | **served** | refused | refused | refused | refused | refused | refused |
-| `rar5-mixed-compressed` | negative | refused | refused | refused | **served** | refused | refused | refused | refused | refused | refused |
-| `rar-encrypted-no-password` | negative | refused | refused | refused | **served** | refused | refused | refused | refused | refused | refused |
-| `huge-direct-pack` | stress | pass | pass | pass | pass | **FAIL** | pass | pass | pass | **FAIL** | pass |
-| `damaged-partial` | failure | pass | pass | pass | pass | pass | pass | pass | pass | **FAIL** | pass |
-| `damaged-severe` | failure | **served** | **served** | refused | **served** | **served** | **served** | **served** | **served** | refused | refused |
-| `dead-post` | failure | refused | refused | refused | refused | refused | refused | refused | refused | refused | refused |
-| `incomplete-archive-set` | failure | refused | refused | refused | **served** | refused | refused | refused | refused | refused | refused |
+| Entry | Tier | AltMount | nzbdavex | StreamNZB | StremThru (newz) | InfiniDysk | nzbdav | Decypharr | raw NNTP baseline | AIOStreams |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `plain-small` | smoke | pass | pass | pass | pass | pass | pass | pass | pass | pass |
+| `rar-named-small` | smoke | **FAIL** | pass | pass | pass | pass | pass | pass | pass | pass |
+| `rar-hdrenc-small` | smoke | **FAIL** | **FAIL** | pass | **FAIL** | **FAIL** | **FAIL** | **FAIL** | pass | pass |
+| `7z-obfuscated-small` | smoke | pass | pass | **FAIL** | pass | pass | pass | **FAIL** | pass | pass |
+| `plain-medium` | core | pass | pass | pass | pass | pass | pass | pass | pass | pass |
+| `plain-season-pack` | core | pass | pass | pass | pass | pass | pass | **FAIL** | pass | pass |
+| `rar-stored-movie` | core | pass | pass | pass | pass | pass | pass | pass | pass | pass |
+| `rar4-stored` | core | **FAIL** | pass | pass | **FAIL** | **FAIL** | **FAIL** | pass | pass | pass |
+| `rar4-inner-obfuscated` | core | pass | pass | pass | pass | pass | pass | pass | pass | pass |
+| `rar-identity-grouped` | core | pass | pass | pass | pass | pass | pass | pass | pass | pass |
+| `rar4-obfuscated-volumes` | core | pass | pass | pass | pass | pass | pass | pass | pass | pass |
+| `rar-numeric-extensions` | core | **FAIL** | pass | **FAIL** | pass | pass | pass | pass | pass | pass |
+| `7z-plain-header` | core | pass | pass | pass | pass | pass | pass | pass | pass | pass |
+| `7z-plain-large` | core | pass | pass | pass | pass | pass | pass | pass | pass | pass |
+| `7z-split-compressed-header` | core | pass | pass | pass | pass | pass | pass | pass | pass | pass |
+| `7z-header-encrypted` | core | pass | pass | **FAIL** | pass | pass | pass | **FAIL** | pass | pass |
+| `rar-hdrenc-large` | core | **FAIL** | pass | pass | pass | pass | pass | **FAIL** | pass | pass |
+| `rar-hdrenc-obfuscated` | core | **FAIL** | pass | **FAIL** | **FAIL** | pass | pass | **FAIL** | pass | pass |
+| `7z-obfuscated-large` | core | **FAIL** | **FAIL** | **FAIL** | **FAIL** | **FAIL** | **FAIL** | pass | pass | pass |
+| `7z-obfuscated-hotd` | core | pass | pass | **FAIL** | pass | pass | pass | **FAIL** | pass | pass |
+| `rar-nested-iso` | core | **FAIL** | pass | **FAIL** | pass | pass | pass | pass | pass | pass |
+| `rar-inner-tree` | core | **FAIL** | pass | **FAIL** | pass | pass | pass | pass | pass | pass |
+| `rar-season-pack` | core | pass | pass | pass | pass | pass | pass | pass | pass | pass |
+| `rar4-compressed` | negative | refused | refused | refused | refused | refused | refused | refused | **served** | refused |
+| `rar5-mixed-compressed` | negative | refused | refused | refused | refused | refused | refused | refused | **served** | refused |
+| `rar-encrypted-no-password` | negative | refused | refused | refused | refused | refused | refused | refused | **served** | refused |
+| `huge-direct-pack` | stress | pass | pass | **FAIL** | pass | pass | pass | pass | pass | pass |
+| `damaged-partial` | failure | pass | pass | pass | pass | pass | pass | pass | pass | pass |
+| `damaged-severe` | failure | refused | **served** | **served** | refused | refused | **served** | **served** | **served** | **served** |
+| `dead-post` | failure | refused | refused | refused | refused | refused | refused | refused | refused | refused |
+| `incomplete-archive-set` | failure | refused | refused | refused | refused | refused | refused | refused | **served** | refused |
 
 ## Byte-identity cross-check
 
@@ -287,6 +276,7 @@ valid reference there.
 
 | Entry | App | Agree | **Differ** |
 |---|---|---:|---:|
+| `plain-medium` | nzbdavex | 1 | **2** |
 | `rar4-obfuscated-volumes` | StreamNZB | 1 | **2** |
 | `rar-numeric-extensions` | Decypharr | 1 | **2** |
 | `plain-small` | raw NNTP baseline | 0 | **1** |
@@ -297,7 +287,7 @@ valid reference there.
 | `rar-nested-iso` | Decypharr | 0 | **1** |
 | `rar-season-pack` | StreamNZB | 0 | **1** |
 
-169 of 178 app-entry pairs matched consensus exactly.
+156 of 166 app-entry pairs matched consensus exactly.
 
 ## Behaviour at a missing article
 
@@ -323,14 +313,14 @@ lays the file out differently cannot be mistaken for one that repaired the gap.
 
 | App | Streaming read | Direct Range into hole | Zero run (control) | Aligned | Slowdown |
 |---|---|---|---|:-:|---:|
-| AIOStreams | **zero-filled** | all zeros | 2,097,152 (61) | yes | 4.21× |
-| AltMount | **zero-filled** | all zeros | 716,800 (61) | yes | 1.51× |
+| AIOStreams | **zero-filled** | all zeros | 2,097,152 (61) | yes | 3.34× |
+| AltMount | **zero-filled** | all zeros | 716,800 (61) | yes | 2.36× |
 | Decypharr | **error-at-hole** | `stream aborted after 0 bytes: terminated` | — | yes | — |
-| InfiniDysk | **zero-filled** | `HTTP 404: ` | 716,800 (61) | yes | 2.4× |
+| InfiniDysk | **zero-filled** | `HTTP 404: ` | 716,800 (61) | yes | 4.1× |
 | nzbdav | **truncated-at-hole** | `HTTP 404: ` | — | yes | — |
-| nzbdavex | **zero-filled** | all zeros | 712,492 (61) | yes | 3.52× |
+| nzbdavex | **zero-filled** | all zeros | 712,492 (61) | yes | 3.76× |
 | raw NNTP baseline | _not addressable_ | — | — | — | — |
-| StreamNZB | **zero-filled** | all zeros | 716,800 (61) | yes | 2.66× |
+| StreamNZB | **zero-filled** | all zeros | 716,800 (61) | yes | 1.45× |
 | StremThru (newz) | **truncated-at-hole** | `stream aborted after 0 bytes: terminated` | — | yes | — |
 
 `zero-filled` means the engine substituted zeros and carried on: the file stays
@@ -345,11 +335,11 @@ upstream, and the only honest reading of that is reconstruction or substitution.
 
 ## Per-entry detail
 
-### nzbdavex
+### AltMount
 
-`nzbdavex` · C# (.NET 10) · version `312d3bc` · serving: webdav · runtime: source · startup 3.38 s
+`altmount` · Go · version `4b42c67` · serving: webdav · runtime: source · startup 323 ms
 
-**Own set**: 22 entries, median post 26.3 GiB · click&rarr;byte 2.81 s (shared population: 2.25 s, 0.80×) · seq 38.3 MB/s · CPU 36.8 s/GiB
+**Own set**: 15 entries, median post 16.2 GiB · click&rarr;byte 7.19 s (shared population: 7.30 s, 1.01×) · seq 39.0 MB/s · CPU 4.2 s/GiB
 
 Medians over the entries *this application served*, so they are not comparable
 across rows. Import and click&rarr;byte scale with post size, so an application
@@ -358,37 +348,102 @@ it survived; the multiplier is the size of that distortion.
 
 | Entry | Import | Cold TTFB | Seq MB/s | Seek TTFB | Playback p05 | To buffer | CPU s/GiB | Peak RSS | Status |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| `plain-small` | 1.79 s | 427 ms | 43.2 | 223 ms | 17.0 | 1.85 s | 51.8 | 421 MiB | ok |
-| `rar-named-small` | 2.36 s | 423 ms | 26.9 | 214 ms | 20.7 | 1.85 s | 34.6 | 437 MiB | ok |
-| `rar-hdrenc-small` | — | — | — | — | — | — | — | 341 MiB | **failed** |
-| `7z-obfuscated-small` | 1.28 s | 100 ms | 26.4 | 127 ms | 30.8 | 1.30 s | 36.3 | 347 MiB | ok |
-| `plain-medium` | 775 ms | 155 ms | 41.1 | 246 ms | 23.7 | 1.87 s | 27.0 | 474 MiB | ok |
-| `plain-season-pack` | 3.61 s | 303 ms | 43.0 | 242 ms | 21.2 | 1.77 s | 32.5 | 522 MiB | ok |
-| `rar-stored-movie` | 1.74 s | 549 ms | 38.8 | 247 ms | 22.9 | 1.64 s | 29.7 | 547 MiB | ok |
-| `rar4-stored` | 2.47 s | 345 ms | 14.2 | 317 ms | 11.8 | 2.41 s | 41.6 | 475 MiB | ok |
-| `rar4-inner-obfuscated` | 1.70 s | 331 ms | 28.7 | 180 ms | 14.7 | 1.97 s | 36.3 | 446 MiB | ok |
-| `rar-identity-grouped` | 1.71 s | 123 ms | 25.3 | 269 ms | 0.4 | 1.77 s | 37.5 | 495 MiB | ok |
-| `rar4-obfuscated-volumes` | 1.52 s | 79 ms | 41.0 | 265 ms | 6.8 | 1.75 s | 32.7 | 562 MiB | ok |
-| `rar-numeric-extensions` | 4.13 s | 503 ms | 35.5 | 1.85 s | 21.3 | 1.41 s | 44.5 | 776 MiB | ok |
-| `7z-plain-header` | 583 ms | 99 ms | 41.0 | 260 ms | 23.6 | 1.50 s | 29.4 | 652 MiB | ok |
-| `7z-plain-large` | 3.13 s | 152 ms | 43.0 | 261 ms | 24.6 | 1.59 s | 35.3 | 550 MiB | ok |
-| `7z-split-compressed-header` | 9.30 s | 114 ms | 37.9 | 302 ms | 18.2 | 1.72 s | 39.6 | 657 MiB | ok |
-| `7z-header-encrypted` | 4.07 s | 104 ms | 27.2 | 377 ms | 2.7 | 3.23 s | 37.8 | 584 MiB | ok |
-| `rar-hdrenc-large` | 16.64 s | 93 ms | 38.7 | 257 ms | 14.1 | 1.94 s | 78.7 | 721 MiB | ok |
-| `rar-hdrenc-obfuscated` | 2.83 s | 1.72 s | 39.0 | 238 ms | 14.5 | 1.22 s | 36.6 | 849 MiB | ok |
-| `7z-obfuscated-large` | — | — | — | — | — | — | — | 633 MiB | **failed** |
-| `7z-obfuscated-hotd` | 2.73 s | 83 ms | 39.3 | 172 ms | 14.4 | 1.54 s | 41.8 | 626 MiB | ok |
-| `rar-nested-iso` | 2.29 s | 285 ms | 37.9 | 431 ms | 23.4 | 1.58 s | 33.3 | 803 MiB | ok |
-| `rar-inner-tree` | 4.93 s | 92 ms | 36.9 | 287 ms | 12.5 | 1.85 s | 40.3 | 770 MiB | ok |
-| `rar-season-pack` | 15.32 s | 130 ms | 35.7 | 283 ms | 18.1 | 1.88 s | 52.3 | 460 MiB | ok |
-| `rar4-compressed` | — | — | — | — | — | — | — | 429 MiB | **failed** |
-| `rar5-mixed-compressed` | — | — | — | — | — | — | — | — | **failed** |
-| `rar-encrypted-no-password` | — | — | — | — | — | — | — | 449 MiB | **failed** |
-| `huge-direct-pack` | 4.12 s | 323 ms | 42.8 | 331 ms | 28.4 | 1.65 s | 37.0 | 525 MiB | ok |
-| `damaged-partial` | 2.57 s | 589 ms | 26.0 | 434 ms | 17.5 | 1.63 s | 51.4 | 507 MiB | ok |
-| `damaged-severe` | 7.29 s | 4.26 s | — | — | — | — | — | 469 MiB | ok |
-| `dead-post` | — | — | — | — | — | — | — | 421 MiB | **failed** |
-| `incomplete-archive-set` | — | — | — | — | — | — | — | 420 MiB | **failed** |
+| `plain-small` | 7.20 s | 197 ms | 39.4 | 399 ms | 31.7 | 1.77 s | 3.6 | 142 MiB | ok |
+| `rar-named-small` | — | — | — | — | — | — | — | 146 MiB | **failed** |
+| `rar-hdrenc-small` | — | — | — | — | — | — | — | 147 MiB | **failed** |
+| `7z-obfuscated-small` | 5.97 s | 284 ms | 37.8 | 336 ms | 32.1 | 1.44 s | 8.7 | 201 MiB | ok |
+| `plain-medium` | 2.43 s | 328 ms | 42.1 | 358 ms | 29.7 | 1.73 s | 3.0 | 227 MiB | ok |
+| `plain-season-pack` | 20.47 s | 411 ms | 37.0 | 499 ms | 32.9 | 1.64 s | 4.6 | 330 MiB | ok |
+| `rar-stored-movie` | 7.62 s | 310 ms | 42.3 | 456 ms | 24.0 | 1.77 s | 3.9 | 365 MiB | ok |
+| `rar4-stored` | — | — | — | — | — | — | — | 385 MiB | **failed** |
+| `rar4-inner-obfuscated` | 4.77 s | 276 ms | 41.3 | 334 ms | 29.2 | 1.84 s | 3.8 | 512 MiB | ok |
+| `rar-identity-grouped` | 3.97 s | 328 ms | 37.1 | 572 ms | 24.3 | 1.42 s | 4.2 | 470 MiB | ok |
+| `rar4-obfuscated-volumes` | 6.81 s | 387 ms | 39.8 | 355 ms | 24.3 | 1.67 s | 4.0 | 493 MiB | ok |
+| `rar-numeric-extensions` | — | — | — | — | — | — | — | 653 MiB | **failed** |
+| `7z-plain-header` | 4.25 s | 353 ms | 39.5 | 345 ms | 29.1 | 1.42 s | 3.2 | 755 MiB | ok |
+| `7z-plain-large` | 5.63 s | 399 ms | 38.6 | 342 ms | 29.0 | 1.71 s | 4.3 | 656 MiB | ok |
+| `7z-split-compressed-header` | 16.37 s | 525 ms | 28.5 | 599 ms | 23.3 | 1.54 s | 4.4 | 1524 MiB | ok |
+| `7z-header-encrypted` | 4.37 s | 221 ms | — | — | — | — | — | 763 MiB | ok |
+| `rar-hdrenc-large` | — | — | — | — | — | — | — | 1387 MiB | **failed** |
+| `rar-hdrenc-obfuscated` | — | — | — | — | — | — | — | 1445 MiB | **failed** |
+| `7z-obfuscated-large` | — | — | — | — | — | — | — | 1177 MiB | **failed** |
+| `7z-obfuscated-hotd` | 12.32 s | 173 ms | 34.4 | 369 ms | — | — | 12.6 | 1529 MiB | ok |
+| `rar-nested-iso` | — | — | — | — | — | — | — | 820 MiB | **failed** |
+| `rar-inner-tree` | — | — | — | — | — | — | — | 975 MiB | **failed** |
+| `rar-season-pack` | 24.27 s | 141 ms | 40.2 | 289 ms | 7.1 | 2.85 s | 6.5 | 2093 MiB | ok |
+| `rar4-compressed` | — | — | — | — | — | — | — | 772 MiB | **failed** |
+| `rar5-mixed-compressed` | — | — | — | — | — | — | — | 732 MiB | **failed** |
+| `rar-encrypted-no-password` | — | — | — | — | — | — | — | 776 MiB | **failed** |
+| `huge-direct-pack` | 125.18 s | 396 ms | 23.3 | 351 ms | 6.3 | 2.51 s | 10.0 | 1350 MiB | ok |
+| `damaged-partial` | 15.69 s | 669 ms | 39.2 | 262 ms | 9.6 | 1.47 s | 3.4 | 1099 MiB | ok |
+| `damaged-severe` | — | — | — | — | — | — | — | 707 MiB | **failed** |
+| `dead-post` | — | — | — | — | — | — | — | 708 MiB | **failed** |
+| `incomplete-archive-set` | — | — | — | — | — | — | — | 708 MiB | **failed** |
+
+<details><summary>Failures (15)</summary>
+
+- `rar-named-small` (smoke): import failed: failed to iterate RAR archive "Gilmore.Girls.2000.S01E17.1080p.NF.WEB-DL.H264.SDR.DDP.2.0.English-HONE.part01.rar": rardecode: bad volume number
+- `rar-hdrenc-small` (smoke): import failed: archive contains no files with allowed extensions (found: [(no extension)], allowed: [.mkv .mp4 .avi .ts .m4v .mov .wmv .mpg .mpeg .xvid .rm .rmvb .asf .asx .wtv .mk3d .dvr-ms .mp3 .flac .m4a .epub .pdf .cbz])
+- `rar4-stored` (core): import failed: failed to iterate RAR archive "Dont.Be.Afraid.of.the.Dark.2010.BRRip.XviD-F0RFUN.rar": All attempts fail: #1: nntp: yEnc CRC mismatch #2: nntp: yEnc CRC mismatch
+- `rar-numeric-extensions` (core): import failed: no files were successfully processed (all files failed validation)
+- `rar-hdrenc-large` (core): import failed: archive contains no files with allowed extensions (found: [.bdmv .clpi .m2ts .mpls .xml .jpg], allowed: [.mkv .mp4 .avi .ts .m4v .mov .wmv .mpg .mpeg .xvid .rm .rmvb .asf .asx .wtv .mk3d .dvr-ms .mp3 .flac .m4a .epub .pdf .cbz])
+- `rar-hdrenc-obfuscated` (core): import failed: no files were successfully processed (all files failed validation)
+- `7z-obfuscated-large` (core): import failed: no valid first 7zip part found in archive
+- `rar-nested-iso` (core): import failed: no files with allowed extensions found (allowed: [.mkv .mp4 .avi .ts .m4v .mov .wmv .mpg .mpeg .xvid .rm .rmvb .asf .asx .wtv .mk3d .dvr-ms .mp3 .flac .m4a .epub .pdf .cbz])
+- `rar-inner-tree` (core): import failed: fast-fail segment check failed: no regular files were successfully processed (all files failed validation)
+- `rar4-compressed` (negative): import failed: no files were successfully processed (all files failed validation)
+- `rar5-mixed-compressed` (negative): import failed: compressed files are not supported: Undercover.Lover.S01E04.DUTCH.1080p.WEB.h264-SOLEM/Undercover.Lover.S01E04.DUTCH.1080p.WEB.h264-SOLEM.mkv (uses rar5.0 compression)
+- `rar-encrypted-no-password` (negative): import failed: fast-fail segment check failed: no regular files were successfully processed (all files failed validation)
+- `damaged-severe` (failure): import failed: fast-fail segment check failed: no regular files were successfully processed (all files failed validation)
+- `dead-post` (failure): import failed: fast-fail segment check failed: no regular files were successfully processed (all files failed validation)
+- `incomplete-archive-set` (failure): import failed: compressed files are not supported: The Falcon And The Winter Soldier S01 2160p WEB-DL HDR 10bit x265 HEVC DDP5 1 Atmos-PHOCiS/The Falcon And The Winter Soldier S01E01 2160p WEB-DL HDR 10bit x265 HEVC DDP5 1 Atmos-PHOCiS.mkv (uses rar5.0 compression)
+
+</details>
+
+### nzbdavex
+
+`nzbdavex` · C# (.NET 10) · version `312d3bc` · serving: webdav · runtime: source · startup 4.15 s
+
+**Own set**: 22 entries, median post 26.3 GiB · click&rarr;byte 3.02 s (shared population: 2.03 s, 0.67×) · seq 40.4 MB/s · CPU 30.1 s/GiB
+
+Medians over the entries *this application served*, so they are not comparable
+across rows. Import and click&rarr;byte scale with post size, so an application
+that fails the large entries is credited with the fast medians of the small ones
+it survived; the multiplier is the size of that distortion.
+
+| Entry | Import | Cold TTFB | Seq MB/s | Seek TTFB | Playback p05 | To buffer | CPU s/GiB | Peak RSS | Status |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| `plain-small` | 2.43 s | 301 ms | 43.1 | 273 ms | 19.0 | 1.36 s | 31.9 | 439 MiB | ok |
+| `rar-named-small` | 1.24 s | 506 ms | 35.9 | 164 ms | 20.5 | 1.63 s | 29.0 | 471 MiB | ok |
+| `rar-hdrenc-small` | — | — | — | — | — | — | — | 469 MiB | **failed** |
+| `7z-obfuscated-small` | 581 ms | 78 ms | 32.6 | 82 ms | 31.8 | 1.29 s | 38.7 | 474 MiB | ok |
+| `plain-medium` | 709 ms | 128 ms | 44.5 | 188 ms | 29.2 | 1.86 s | 26.3 | 428 MiB | ok |
+| `plain-season-pack` | 3.36 s | 265 ms | 43.8 | 344 ms | 23.4 | 2.31 s | 30.3 | 515 MiB | ok |
+| `rar-stored-movie` | 1.65 s | 372 ms | 37.8 | 241 ms | 25.8 | 1.61 s | 27.3 | 596 MiB | ok |
+| `rar4-stored` | 2.59 s | 282 ms | 18.7 | 138 ms | 10.0 | 1.72 s | 32.2 | 433 MiB | ok |
+| `rar4-inner-obfuscated` | 1.01 s | 324 ms | 35.1 | 138 ms | 14.7 | 1.76 s | 28.9 | 473 MiB | ok |
+| `rar-identity-grouped` | 1.81 s | 106 ms | 31.7 | 227 ms | 15.3 | 1.35 s | 30.0 | 498 MiB | ok |
+| `rar4-obfuscated-volumes` | 1.59 s | 83 ms | 41.0 | 267 ms | 26.1 | 1.28 s | 24.9 | 520 MiB | ok |
+| `rar-numeric-extensions` | 3.97 s | 441 ms | 33.2 | 408 ms | 15.9 | 2.39 s | 28.9 | 785 MiB | ok |
+| `7z-plain-header` | 809 ms | 159 ms | 44.9 | 275 ms | 22.8 | 1.33 s | 24.7 | 531 MiB | ok |
+| `7z-plain-large` | 3.12 s | 120 ms | 39.6 | 215 ms | 29.5 | 1.93 s | 29.8 | 546 MiB | ok |
+| `7z-split-compressed-header` | 8.90 s | 107 ms | 42.4 | 252 ms | 28.5 | 1.36 s | 36.6 | 634 MiB | ok |
+| `7z-header-encrypted` | 3.26 s | 109 ms | 30.3 | 209 ms | 4.7 | 3.37 s | 36.3 | 512 MiB | ok |
+| `rar-hdrenc-large` | 15.01 s | 141 ms | 40.4 | 218 ms | 28.7 | 1.47 s | 49.4 | 669 MiB | ok |
+| `rar-hdrenc-obfuscated` | 2.52 s | 1.69 s | 40.0 | 342 ms | 31.7 | 1.65 s | 34.1 | 834 MiB | ok |
+| `7z-obfuscated-large` | — | — | — | — | — | — | — | 473 MiB | **failed** |
+| `7z-obfuscated-hotd` | 3.02 s | 136 ms | 42.6 | 265 ms | 27.5 | 1.48 s | 30.2 | 557 MiB | ok |
+| `rar-nested-iso` | 2.27 s | 316 ms | 42.5 | 382 ms | 35.6 | 1.24 s | 28.4 | 796 MiB | ok |
+| `rar-inner-tree` | 4.91 s | 83 ms | 43.1 | 190 ms | 29.6 | 1.60 s | 27.1 | 537 MiB | ok |
+| `rar-season-pack` | 14.23 s | 106 ms | 40.3 | 200 ms | 26.6 | 1.41 s | 35.2 | 486 MiB | ok |
+| `rar4-compressed` | — | — | — | — | — | — | — | 405 MiB | **failed** |
+| `rar5-mixed-compressed` | — | — | — | — | — | — | — | 414 MiB | **failed** |
+| `rar-encrypted-no-password` | — | — | — | — | — | — | — | 437 MiB | **failed** |
+| `huge-direct-pack` | 3.61 s | 173 ms | 46.5 | 227 ms | 33.8 | 1.77 s | 32.4 | 512 MiB | ok |
+| `damaged-partial` | 1.94 s | 708 ms | 33.9 | 249 ms | 25.0 | 1.78 s | 29.6 | 556 MiB | ok |
+| `damaged-severe` | 6.57 s | 3.59 s | — | — | — | — | — | 433 MiB | ok |
+| `dead-post` | — | — | — | — | — | — | — | 427 MiB | **failed** |
+| `incomplete-archive-set` | — | — | — | — | — | — | — | 427 MiB | **failed** |
 
 <details><summary>Failures (7)</summary>
 
@@ -402,190 +457,11 @@ it survived; the multiplier is the size of that distortion.
 
 </details>
 
-### Decypharr
-
-`decypharr` · Go · version `v2.5` (`0dd1cbb`) · serving: webdav · runtime: docker · CPU/RSS from container cgroups · startup 2.31 s
-
-**Own set**: 17 entries, median post 25.3 GiB · click&rarr;byte 9.76 s (shared population: 4.48 s, 0.46×) · seq 35.6 MB/s · CPU 30.0 s/GiB
-
-Medians over the entries *this application served*, so they are not comparable
-across rows. Import and click&rarr;byte scale with post size, so an application
-that fails the large entries is credited with the fast medians of the small ones
-it survived; the multiplier is the size of that distortion.
-
-| Entry | Import | Cold TTFB | Seq MB/s | Seek TTFB | Playback p05 | To buffer | CPU s/GiB | Peak RSS | Status |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| `plain-small` | 2.70 s | 259 ms | 34.5 | 271 ms | 26.1 | 1.36 s | 25.7 | 55 MiB | ok |
-| `rar-named-small` | 3.08 s | 794 ms | 38.7 | 260 ms | 24.6 | 1.75 s | 28.5 | 96 MiB | ok |
-| `rar-hdrenc-small` | — | — | — | — | — | — | — | 66 MiB | **failed** |
-| `7z-obfuscated-small` | — | — | — | — | — | — | — | 68 MiB | **failed** |
-| `plain-medium` | 3.11 s | 273 ms | 29.9 | 467 ms | 6.9 | 1.99 s | 30.0 | 75 MiB | ok |
-| `plain-season-pack` | — | — | — | — | — | — | — | 169 MiB | **failed** |
-| `rar-stored-movie` | 9.25 s | 551 ms | 35.4 | 467 ms | 19.0 | 2.66 s | 29.9 | 192 MiB | ok |
-| `rar4-stored` | 5.15 s | 283 ms | 0.2† | 260 ms | 0.5 | 1.65 s | 109.5 | 221 MiB | ok |
-| `rar4-inner-obfuscated` | 3.09 s | 289 ms | 37.0 | 358 ms | 18.0 | 2.70 s | 26.9 | 196 MiB | ok |
-| `rar-identity-grouped` | 4.27 s | 213 ms | — | 336 ms | — | — | — | 209 MiB | ok |
-| `rar4-obfuscated-volumes` | 9.56 s | 195 ms | 40.1 | 204 ms | 3.6 | 2.18 s | 29.0 | 216 MiB | ok |
-| `rar-numeric-extensions` | 24.54 s | 3.16 s | 42.1 | 322 ms | 0.0 | 1.40 s | 39.5 | 313 MiB | ok |
-| `7z-plain-header` | 1.06 s | 128 ms | 35.6 | 273 ms | 3.0 | 2.06 s | 26.8 | 317 MiB | ok |
-| `7z-plain-large` | 12.30 s | 690 ms | 6.6 | 307 ms | 0.7 | 4.37 s | 54.2 | 342 MiB | ok |
-| `7z-split-compressed-header` | 21.48 s | 380 ms | 16.2 | 293 ms | 24.9 | 1.19 s | 29.3 | 435 MiB | ok |
-| `7z-header-encrypted` | — | — | — | — | — | — | — | 435 MiB | **failed** |
-| `rar-hdrenc-large` | — | — | — | — | — | — | — | 657 MiB | **failed** |
-| `rar-hdrenc-obfuscated` | — | — | — | — | — | — | — | 672 MiB | **failed** |
-| `7z-obfuscated-large` | 29.41 s | 254 ms | 21.5 | 384 ms | 0.8 | 3.88 s | 48.6 | 728 MiB | ok |
-| `7z-obfuscated-hotd` | — | — | — | — | — | — | — | 730 MiB | **failed** |
-| `rar-nested-iso` | 5.50 s | 278 ms | 27.3 | 2 ms | — | 250 ms | 19.5 | 815 MiB | ok |
-| `rar-inner-tree` | 97.40 s | 327 ms | 37.2 | 423 ms | 27.0 | 1.40 s | 36.0 | 1059 MiB | ok |
-| `rar-season-pack` | 34.56 s | 233 ms | 37.8 | 291 ms | 4.7 | 2.90 s | 57.3 | 1039 MiB | ok |
-| `rar4-compressed` | — | — | — | — | — | — | — | 1042 MiB | **failed** |
-| `rar5-mixed-compressed` | — | — | — | — | — | — | — | 1046 MiB | **failed** |
-| `rar-encrypted-no-password` | — | — | — | — | — | — | — | 1088 MiB | **failed** |
-| `huge-direct-pack` | 148.71 s | 351 ms | 36.6 | 274 ms | 10.8 | 2.08 s | 39.3 | 1514 MiB | ok |
-| `damaged-partial` | 6.17 s | 322 ms | 44.5 | 259 ms | 22.0 | 1.48 s | 28.9 | 1540 MiB | ok |
-| `damaged-severe` | 15.32 s | 281 ms | — | — | — | — | — | 1574 MiB | ok |
-| `dead-post` | — | — | — | — | — | — | — | 1562 MiB | **failed** |
-| `incomplete-archive-set` | — | — | — | — | — | — | — | 1562 MiB | **failed** |
-
-† transfer too short to measure sustained rate (the file fit in flight).
-
-<details><summary>Failures (12)</summary>
-
-- `rar-hdrenc-small` (smoke): import failed: failed to process nzb: failed to process NZB archives: all files were skipped due to size or extension restrictions(error file extension not allowed)
-- `7z-obfuscated-small` (smoke): import failed: failed to process nzb: content verification failed: head of "7z-obfuscated-small.mkv" matches no media container signature: usenet file content is corrupt
-- `plain-season-pack` (core): import failed: failed to process nzb: availability check failed: file "Dexter.2006.S02E12.The.British.Invasion.PROPER.BluRay.1080p.TrueHD.5.1.AVC.REMUX-FraMeSToR.mkv" unavailable: usenet segment is missing
-- `7z-header-encrypted` (core): import failed: failed to process nzb: content verification failed: head of "7z-header-encrypted.mkv" matches no media container signature: usenet file content is corrupt
-- `rar-hdrenc-large` (core): import failed: failed to process nzb: content verification failed: head of "00000.m2ts" matches no media container signature: usenet file content is corrupt
-- `rar-hdrenc-obfuscated` (core): import failed: failed to process nzb: availability check failed: file "rar-hdrenc-obfuscated.mkv" unavailable: usenet segment is missing
-- `7z-obfuscated-hotd` (core): import failed: failed to process nzb: content verification failed: head of "7z-obfuscated-hotd.mkv" matches no media container signature: usenet file content is corrupt
-- `rar4-compressed` (negative): import failed: failed to process nzb: failed to process NZB archives: no valid files found in NZB
-- `rar5-mixed-compressed` (negative): import failed: failed to process nzb: failed to process NZB archives: all files were skipped due to size or extension restrictions(error file extension not allowed)
-- `rar-encrypted-no-password` (negative): import failed: failed to process nzb: failed to process NZB archives: no valid files found in NZB
-- `dead-post` (failure): POST <app>/sabnzbd/api?mode=addfile&output=json&category=bench&cat=bench&action=none -> 500: { "status": false, "error": "Failed to add dead-post.nzb: usenet parse failed: failed to stat segment OB7ucO5ujqhRQOnlY.part01.rar \u003cc1e5f474c7344dcb8d2c2cd5d34a7483@ngPost\u003e: all providers failed: NNTP ARTICLE_NOT_FOUND (code 430): No Such Article" }
-- `incomplete-archive-set` (failure): import failed: failed to process nzb: failed to process NZB archives: no valid files found in NZB
-
-</details>
-
-### StremThru (newz)
-
-`stremthru` · Go · version `0.103.2` · serving: http-range · runtime: source · startup 567 ms
-
-**Own set**: 20 entries, median post 26.3 GiB · click&rarr;byte 4.07 s (shared population: 2.50 s, 0.61×) · seq 26.7 MB/s · CPU 69.8 s/GiB
-
-Medians over the entries *this application served*, so they are not comparable
-across rows. Import and click&rarr;byte scale with post size, so an application
-that fails the large entries is credited with the fast medians of the small ones
-it survived; the multiplier is the size of that distortion.
-
-| Entry | Import | Cold TTFB | Seq MB/s | Seek TTFB | Playback p05 | To buffer | CPU s/GiB | Peak RSS | Status |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| `plain-small` | 1.85 s | 72 ms | 26.7 | 374 ms | 18.9 | 2.07 s | 21.5 | 602 MiB | ok |
-| `rar-named-small` | 2.91 s | 125 ms | 20.8 | 410 ms | 14.6 | 2.93 s | 37.2 | 733 MiB | ok |
-| `rar-hdrenc-small` | — | — | — | — | — | — | — | 653 MiB | **failed** |
-| `7z-obfuscated-small` | 1.30 s | 6 ms | 8.1 | 132 ms | 3.1 | 841 ms | 49.9 | 570 MiB | ok |
-| `plain-medium` | 771 ms | 25 ms | 24.1 | 279 ms | 13.9 | 2.00 s | 6.2 | 572 MiB | ok |
-| `plain-season-pack` | 2.38 s | 207 ms | 33.8 | 447 ms | 17.0 | 2.31 s | 10.9 | 645 MiB | ok |
-| `rar-stored-movie` | 2.93 s | 209 ms | 27.9 | 551 ms | 8.5 | 2.12 s | 41.6 | 790 MiB | ok |
-| `rar4-stored` | — | — | — | — | — | — | — | 761 MiB | **failed** |
-| `rar4-inner-obfuscated` | 2.17 s | 106 ms | 28.7 | 325 ms | 17.6 | 2.07 s | 18.8 | 916 MiB | ok |
-| `rar-identity-grouped` | 2.28 s | 128 ms | — | 385 ms | — | — | — | 776 MiB | ok |
-| `rar4-obfuscated-volumes` | 1.95 s | 154 ms | 26.9 | 470 ms | 20.4 | 1.86 s | 30.7 | 745 MiB | ok |
-| `rar-numeric-extensions` | 7.66 s | 734 ms | 29.4 | 939 ms | 13.6 | 2.83 s | 92.2 | 876 MiB | ok |
-| `7z-plain-header` | 987 ms | 11 ms | 7.2 | 133 ms | 3.7 | 6.91 s | 81.3 | 733 MiB | ok |
-| `7z-plain-large` | 4.86 s | 146 ms | 8.3 | 289 ms | 2.8 | 5.56 s | 130.5 | 628 MiB | ok |
-| `7z-split-compressed-header` | 25.26 s | 308 ms | 3.8† | 649 ms | 2.3 | 9.04 s | 293.4 | 1243 MiB | ok |
-| `7z-header-encrypted` | 7.37 s | 49 ms | 2.3† | 557 ms | 1.8 | 10.14 s | — | 785 MiB | ok |
-| `rar-hdrenc-large` | 138.30 s | 2.35 s | 18.8 | 2.71 s | 13.6 | 4.70 s | 487.5 | 2037 MiB | ok |
-| `rar-hdrenc-obfuscated` | — | — | — | — | — | — | — | 2027 MiB | **failed** |
-| `7z-obfuscated-large` | — | — | — | — | — | — | — | 1638 MiB | **failed** |
-| `7z-obfuscated-hotd` | 6.81 s | 88 ms | 5.8 | 246 ms | 2.1 | 7.30 s | 94.0 | 1372 MiB | ok |
-| `rar-nested-iso` | 4.86 s | 580 ms | 27.2 | 911 ms | 12.8 | 2.61 s | 64.8 | 843 MiB | ok |
-| `rar-inner-tree` | 13.36 s | 1.22 s | 24.3 | 1.53 s | 12.0 | 3.20 s | 159.3 | 1462 MiB | ok |
-| `rar-season-pack` | 190.86 s | 1.93 s | 26.8 | 2.35 s | 15.2 | 4.40 s | 367.6 | 1800 MiB | ok |
-| `rar4-compressed` | — | — | — | — | — | — | — | 1238 MiB | **failed** |
-| `rar5-mixed-compressed` | — | — | — | — | — | — | — | 1214 MiB | **failed** |
-| `rar-encrypted-no-password` | — | — | — | — | — | — | — | 1207 MiB | **failed** |
-| `huge-direct-pack` | 5.85 s | 1.43 s | 29.8 | 1.78 s | 10.7 | 3.35 s | 74.8 | 1568 MiB | ok |
-| `damaged-partial` | 4.00 s | 252 ms | 28.2 | 500 ms | 12.9 | 2.45 s | 72.3 | 1246 MiB | ok |
-| `damaged-severe` | — | — | — | — | — | — | — | 827 MiB | **failed** |
-| `dead-post` | — | — | — | — | — | — | — | 936 MiB | **failed** |
-| `incomplete-archive-set` | — | — | — | — | — | — | — | 936 MiB | **failed** |
-
-† transfer too short to measure sustained rate (the file fit in flight).
-
-<details><summary>Failures (10)</summary>
-
-- `rar-hdrenc-small` (smoke): newz status failed
-- `rar4-stored` (core): newz status failed
-- `rar-hdrenc-obfuscated` (core): newz status failed
-- `7z-obfuscated-large` (core): newz status failed
-- `rar4-compressed` (negative): newz status failed
-- `rar5-mixed-compressed` (negative): newz status failed
-- `rar-encrypted-no-password` (negative): newz status failed
-- `damaged-severe` (failure): newz status failed
-- `dead-post` (failure): newz status failed
-- `incomplete-archive-set` (failure): newz status failed
-
-</details>
-
-### raw NNTP baseline
-
-`raw` · JavaScript (this harness) · version `harness-builtin` · serving: http-range · runtime: source · startup 3 ms
-
-**Own set**: 24 entries, median post 26.3 GiB · click&rarr;byte 497 ms (shared population: 484 ms, 0.97×) · seq 35.1 MB/s · CPU 22.0 s/GiB
-
-Medians over the entries *this application served*, so they are not comparable
-across rows. Import and click&rarr;byte scale with post size, so an application
-that fails the large entries is credited with the fast medians of the small ones
-it survived; the multiplier is the size of that distortion.
-
-| Entry | Import | Cold TTFB | Seq MB/s | Seek TTFB | Playback p05 | To buffer | CPU s/GiB | Peak RSS | Status |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| `plain-small` | 389 ms | 492 ms | 35.8 | 315 ms | 20.6 | 1.52 s | 202.4 | 648 MiB | ok |
-| `rar-named-small` | 199 ms | 188 ms | 47.3† | 335 ms | 15.2 | — | 45.6 | 645 MiB | ok |
-| `rar-hdrenc-small` | 131 ms | 353 ms | 35.3† | 341 ms | 24.0 | 1.52 s | 42.3 | 662 MiB | ok |
-| `7z-obfuscated-small` | 192 ms | 188 ms | 45.3† | 174 ms | — | — | — | 643 MiB | ok |
-| `plain-medium` | 354 ms | 140 ms | 33.0 | 255 ms | 23.0 | 1.43 s | 17.2 | 671 MiB | ok |
-| `plain-season-pack` | 540 ms | 650 ms | 39.5 | 501 ms | 29.2 | 1.75 s | 27.4 | 717 MiB | ok |
-| `rar-stored-movie` | 195 ms | 240 ms | 36.5 | 265 ms | 22.2 | 1.19 s | 16.0 | 697 MiB | ok |
-| `rar4-stored` | 138 ms | 292 ms | 31.2† | 202 ms | — | — | — | 659 MiB | ok |
-| `rar4-inner-obfuscated` | 129 ms | 345 ms | 39.8† | 392 ms | 37.4 | 1.21 s | 34.5 | 695 MiB | ok |
-| `rar-identity-grouped` | 229 ms | 310 ms | 30.1 | 338 ms | 7.4 | 2.09 s | 20.4 | 678 MiB | ok |
-| `rar4-obfuscated-volumes` | 132 ms | 214 ms | 37.4 | 408 ms | 25.1 | 1.21 s | 17.0 | 600 MiB | ok |
-| `rar-numeric-extensions` | 273 ms | 370 ms | 32.8 | 351 ms | 26.6 | 1.67 s | 19.7 | 638 MiB | ok |
-| `7z-plain-header` | 113 ms | 174 ms | 35.9 | 345 ms | 30.3 | 1.39 s | 18.1 | 629 MiB | ok |
-| `7z-plain-large` | 207 ms | 332 ms | 32.2 | 338 ms | 29.6 | 1.37 s | 15.7 | 643 MiB | ok |
-| `7z-split-compressed-header` | 156 ms | 115 ms | 36.5 | 359 ms | 32.6 | 1.60 s | 28.1 | 672 MiB | ok |
-| `7z-header-encrypted` | 239 ms | 509 ms | 29.8 | 342 ms | 14.8 | 2.36 s | 26.7 | 661 MiB | ok |
-| `rar-hdrenc-large` | 271 ms | 249 ms | 38.8 | 311 ms | 26.7 | 1.64 s | 18.3 | 680 MiB | ok |
-| `rar-hdrenc-obfuscated` | 506 ms | 125 ms | 35.0 | 626 ms | 24.3 | 1.73 s | 18.0 | 688 MiB | ok |
-| `7z-obfuscated-large` | 201 ms | 171 ms | 43.7 | 284 ms | 41.1 | 1.36 s | 24.0 | 687 MiB | ok |
-| `7z-obfuscated-hotd` | 145 ms | 302 ms | 35.1 | 248 ms | 31.5 | 1.50 s | 15.9 | 695 MiB | ok |
-| `rar-nested-iso` | 253 ms | 283 ms | 33.0 | 351 ms | 22.8 | 1.44 s | 23.5 | 710 MiB | ok |
-| `rar-inner-tree` | 352 ms | 151 ms | 33.6 | 371 ms | 18.0 | 1.79 s | 16.3 | 691 MiB | ok |
-| `rar-season-pack` | 210 ms | 291 ms | 34.6 | 281 ms | 31.2 | 1.53 s | 26.8 | 696 MiB | ok |
-| `rar4-compressed` | 123 ms | 184 ms | — | — | — | — | — | — | ok |
-| `rar5-mixed-compressed` | 160 ms | 141 ms | — | — | — | — | — | 678 MiB | ok |
-| `rar-encrypted-no-password` | 315 ms | 464 ms | — | — | — | — | — | 648 MiB | ok |
-| `huge-direct-pack` | 903 ms | 648 ms | 35.9 | 359 ms | 28.5 | 1.39 s | 61.8 | 850 MiB | ok |
-| `damaged-partial` | 127 ms | 335 ms | 33.4 | 389 ms | 43.0 | 1.39 s | 29.1 | 727 MiB | ok |
-| `damaged-severe` | 193 ms | 331 ms | — | — | — | — | — | 722 MiB | ok |
-| `dead-post` | — | — | — | — | — | — | — | 723 MiB | **failed** |
-| `incomplete-archive-set` | 179 ms | 188 ms | — | — | — | — | — | 719 MiB | ok |
-
-† transfer too short to measure sustained rate (the file fit in flight).
-
-<details><summary>Failures (1)</summary>
-
-- `dead-post` (failure): first article missing
-
-</details>
-
 ### StreamNZB
 
-`streamnzb` · Go · version `3e79529` · serving: http-range · runtime: source · startup 1.55 s
+`streamnzb` · Go · version `3e79529` · serving: http-range · runtime: source · startup 1.23 s
 
-**Own set**: 15 entries, median post 8.8 GiB · click&rarr;byte 1.60 s (shared population: 1.72 s, 1.07×) · seq 38.8 MB/s · CPU 6.5 s/GiB
+**Own set**: 15 entries, median post 8.8 GiB · click&rarr;byte 1.76 s (shared population: 1.81 s, 1.03×) · seq 39.4 MB/s · CPU 6.1 s/GiB
 
 Medians over the entries *this application served*, so they are not comparable
 across rows. Import and click&rarr;byte scale with post size, so an application
@@ -594,37 +470,37 @@ it survived; the multiplier is the size of that distortion.
 
 | Entry | Import | Cold TTFB | Seq MB/s | Seek TTFB | Playback p05 | To buffer | CPU s/GiB | Peak RSS | Status |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| `plain-small` | 10 ms | 1.83 s | 37.3 | 469 ms | 24.1 | 1.78 s | 5.9 | 535 MiB | ok |
-| `rar-named-small` | 12 ms | 1.05 s | 30.4 | 204 ms | 27.3 | 1.19 s | 6.1 | 535 MiB | ok |
-| `rar-hdrenc-small` | 6 ms | 932 ms | 37.7 | 5 ms | 3.7 | 534 ms | 6.8 | 539 MiB | ok |
-| `7z-obfuscated-small` | 3 ms | 635 ms | — | — | — | — | — | 516 MiB | **failed** |
-| `plain-medium` | 28 ms | 470 ms | 40.7 | 107 ms | 19.9 | 1.24 s | 4.7 | 537 MiB | ok |
-| `plain-season-pack` | 274 ms | 701 ms | 40.1 | 284 ms | 30.2 | 1.44 s | 7.4 | 540 MiB | ok |
-| `rar-stored-movie` | 99 ms | 3.26 s | 47.3 | 203 ms | 18.4 | 1.25 s | 8.2 | 557 MiB | ok |
-| `rar4-stored` | 15 ms | 1.32 s | — | 171 ms | — | — | — | 539 MiB | ok |
-| `rar4-inner-obfuscated` | 9 ms | 1.32 s | 34.4 | 199 ms | 26.7 | 1.62 s | 5.8 | 534 MiB | ok |
-| `rar-identity-grouped` | 32 ms | 2.58 s | 31.4 | 441 ms | 18.2 | 2.01 s | 6.2 | 532 MiB | ok |
-| `rar4-obfuscated-volumes` | 57 ms | 2.33 s | 34.2 | 510 ms | 28.5 | 1.86 s | 6.2 | 537 MiB | ok |
-| `rar-numeric-extensions` | 226 ms | 5.01 s | — | — | — | — | — | 532 MiB | **failed** |
-| `7z-plain-header` | 14 ms | 1.28 s | 42.5 | 379 ms | 23.4 | 1.80 s | 4.6 | 532 MiB | ok |
-| `7z-plain-large` | 173 ms | 3.42 s | 42.5 | 232 ms | 29.2 | 1.40 s | 7.9 | 604 MiB | ok |
-| `7z-split-compressed-header` | 254 ms | 1.35 s | 29.5 | 502 ms | 15.0 | 2.85 s | 9.2 | 532 MiB | ok |
-| `7z-header-encrypted` | 26 ms | 1.29 s | — | — | — | — | — | 530 MiB | **failed** |
-| `rar-hdrenc-large` | 333 ms | 3.36 s | 41.8 | 12 ms | 37.3 | 250 ms | 22.3 | 611 MiB | ok |
+| `plain-small` | 8 ms | 2.07 s | 37.7 | 819 ms | 26.1 | 1.65 s | 4.1 | 534 MiB | ok |
+| `rar-named-small` | 12 ms | 1.18 s | 34.5 | 160 ms | 19.1 | 1.79 s | 4.9 | 535 MiB | ok |
+| `rar-hdrenc-small` | 5 ms | 830 ms | 39.4 | 7 ms | 28.6 | 327 ms | 7.0 | 537 MiB | ok |
+| `7z-obfuscated-small` | 4 ms | 588 ms | — | — | — | — | — | — | **failed** |
+| `plain-medium` | 43 ms | 514 ms | 42.5 | 154 ms | 31.1 | 1.40 s | 4.0 | 534 MiB | ok |
+| `plain-season-pack` | 254 ms | 1.26 s | 39.6 | 319 ms | 11.7 | 1.79 s | 6.3 | 542 MiB | ok |
+| `rar-stored-movie` | 82 ms | 2.79 s | 45.2 | 318 ms | 18.1 | 2.22 s | 6.7 | 605 MiB | ok |
+| `rar4-stored` | 16 ms | 1.03 s | — | 222 ms | — | — | — | 536 MiB | ok |
+| `rar4-inner-obfuscated` | 8 ms | 780 ms | 35.5 | 137 ms | 20.2 | 1.85 s | 5.1 | 539 MiB | ok |
+| `rar-identity-grouped` | 30 ms | 2.19 s | 32.7 | 401 ms | 19.9 | 1.93 s | 6.0 | 536 MiB | ok |
+| `rar4-obfuscated-volumes` | 56 ms | 1.81 s | 37.5 | 451 ms | 19.9 | 1.71 s | 5.8 | 534 MiB | ok |
+| `rar-numeric-extensions` | 242 ms | 5.01 s | — | — | — | — | — | 541 MiB | **failed** |
+| `7z-plain-header` | 9 ms | 1.10 s | 46.4 | 231 ms | 26.0 | 1.17 s | 5.3 | 547 MiB | ok |
+| `7z-plain-large` | 147 ms | 2.38 s | 47.6 | 260 ms | 28.7 | 2.24 s | 6.4 | 592 MiB | ok |
+| `7z-split-compressed-header` | 253 ms | 1.50 s | 39.0 | 417 ms | 23.3 | 2.00 s | 10.2 | 573 MiB | ok |
+| `7z-header-encrypted` | 27 ms | 1.31 s | — | — | — | — | — | 524 MiB | **failed** |
+| `rar-hdrenc-large` | 324 ms | 3.09 s | 39.3 | 11 ms | 31.3 | 250 ms | 26.7 | 589 MiB | ok |
 | `rar-hdrenc-obfuscated` | — | — | — | — | — | — | — | — | **failed** |
-| `7z-obfuscated-large` | 248 ms | 5.03 s | — | — | — | — | — | 530 MiB | **failed** |
-| `7z-obfuscated-hotd` | 79 ms | 5.03 s | — | — | — | — | — | 534 MiB | **failed** |
-| `rar-nested-iso` | 541 ms | 1.09 s | — | — | — | — | — | 530 MiB | **failed** |
+| `7z-obfuscated-large` | 270 ms | 5.01 s | — | — | — | — | — | 530 MiB | **failed** |
+| `7z-obfuscated-hotd` | 79 ms | 5.03 s | — | — | — | — | — | 574 MiB | **failed** |
+| `rar-nested-iso` | 448 ms | 1.08 s | — | — | — | — | — | 525 MiB | **failed** |
 | `rar-inner-tree` | — | — | — | — | — | — | — | — | **failed** |
-| `rar-season-pack` | 337 ms | 2.02 s | 39.9 | 218 ms | 24.6 | 1.85 s | 68.3 | 537 MiB | ok |
-| `rar4-compressed` | 29 ms | 1.19 s | — | — | — | — | — | 528 MiB | **failed** |
-| `rar5-mixed-compressed` | 18 ms | 960 ms | — | — | — | — | — | 524 MiB | **failed** |
-| `rar-encrypted-no-password` | 1.10 s | 791 ms | — | — | — | — | — | 541 MiB | **failed** |
+| `rar-season-pack` | 276 ms | 1.68 s | 44.8 | 275 ms | 24.6 | 2.04 s | 48.0 | 556 MiB | ok |
+| `rar4-compressed` | 32 ms | 788 ms | — | — | — | — | — | 521 MiB | **failed** |
+| `rar5-mixed-compressed` | 15 ms | 478 ms | — | — | — | — | — | — | **failed** |
+| `rar-encrypted-no-password` | 1.18 s | 843 ms | — | — | — | — | — | 537 MiB | **failed** |
 | `huge-direct-pack` | — | — | — | — | — | — | — | — | **failed** |
-| `damaged-partial` | 59 ms | 1.38 s | 35.2 | 285 ms | 13.4 | 2.85 s | 98.2 | 543 MiB | ok |
-| `damaged-severe` | 204 ms | 1.41 s | — | — | — | — | — | 542 MiB | ok |
-| `dead-post` | 28 ms | 1.24 s | — | — | — | — | — | 532 MiB | **failed** |
-| `incomplete-archive-set` | 8 ms | 1.09 s | — | — | — | — | — | 531 MiB | **failed** |
+| `damaged-partial` | 47 ms | 984 ms | 45.6 | 313 ms | 25.3 | 1.36 s | 61.0 | 543 MiB | ok |
+| `damaged-severe` | 188 ms | 1.23 s | — | — | — | — | — | 538 MiB | ok |
+| `dead-post` | 34 ms | 1.23 s | — | — | — | — | — | 575 MiB | **failed** |
+| `incomplete-archive-set` | 6 ms | 1.60 s | — | — | — | — | — | 534 MiB | **failed** |
 
 <details><summary>Failures (14)</summary>
 
@@ -645,69 +521,11 @@ it survived; the multiplier is the size of that distortion.
 
 </details>
 
-### nzbdav
+### StremThru (newz)
 
-`nzbdav` · C# (.NET 10) · version `794948b` · serving: webdav · runtime: source · startup 3.33 s
+`stremthru` · Go · version `0.103.2` · serving: http-range · runtime: source · startup 2.04 s
 
-**Own set**: 21 entries, median post 27.3 GiB · click&rarr;byte 3.39 s (shared population: 2.00 s, 0.59×) · seq 37.7 MB/s · CPU 17.4 s/GiB
-
-Medians over the entries *this application served*, so they are not comparable
-across rows. Import and click&rarr;byte scale with post size, so an application
-that fails the large entries is credited with the fast medians of the small ones
-it survived; the multiplier is the size of that distortion.
-
-| Entry | Import | Cold TTFB | Seq MB/s | Seek TTFB | Playback p05 | To buffer | CPU s/GiB | Peak RSS | Status |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| `plain-small` | 2.20 s | 170 ms | 39.1 | 509 ms | 20.4 | 1.53 s | 26.9 | 265 MiB | ok |
-| `rar-named-small` | 1.55 s | 79 ms | 33.3 | 285 ms | 20.7 | 1.15 s | 17.6 | 270 MiB | ok |
-| `rar-hdrenc-small` | — | — | — | — | — | — | — | 262 MiB | **failed** |
-| `7z-obfuscated-small` | 559 ms | 90 ms | 23.8 | 227 ms | 32.5 | 1.05 s | 16.8 | 268 MiB | ok |
-| `plain-medium` | 928 ms | 40 ms | 38.6 | 298 ms | 19.7 | 1.30 s | 13.4 | 288 MiB | ok |
-| `plain-season-pack` | 2.57 s | 65 ms | 31.7 | 400 ms | 17.4 | 1.84 s | 15.8 | 310 MiB | ok |
-| `rar-stored-movie` | 2.24 s | 130 ms | 34.0 | 364 ms | 4.1 | 2.12 s | 17.4 | 299 MiB | ok |
-| `rar4-stored` | — | — | — | — | — | — | — | 278 MiB | **failed** |
-| `rar4-inner-obfuscated` | 1.20 s | 95 ms | 39.3 | 309 ms | 18.1 | 1.94 s | 15.7 | 286 MiB | ok |
-| `rar-identity-grouped` | 1.35 s | 231 ms | — | 506 ms | — | — | — | 292 MiB | ok |
-| `rar4-obfuscated-volumes` | 1.57 s | 75 ms | 34.1 | 557 ms | 18.5 | 1.77 s | 16.8 | 305 MiB | ok |
-| `rar-numeric-extensions` | 5.16 s | 216 ms | 37.7 | 318 ms | 28.7 | 1.59 s | 20.9 | 344 MiB | ok |
-| `7z-plain-header` | 690 ms | 167 ms | 41.8 | 251 ms | 21.1 | 1.54 s | 13.1 | 322 MiB | ok |
-| `7z-plain-large` | 3.71 s | 188 ms | 39.2 | 541 ms | 29.1 | 1.24 s | 18.5 | 322 MiB | ok |
-| `7z-split-compressed-header` | 8.95 s | 164 ms | 20.9 | 315 ms | 19.2 | 1.84 s | 32.7 | 351 MiB | ok |
-| `7z-header-encrypted` | 3.93 s | 195 ms | — | 396 ms | — | — | — | 346 MiB | ok |
-| `rar-hdrenc-large` | 19.02 s | 140 ms | 33.3 | 354 ms | 24.5 | 1.70 s | 60.7 | 372 MiB | ok |
-| `rar-hdrenc-obfuscated` | 4.13 s | 108 ms | 41.0 | 636 ms | 17.1 | 1.36 s | 25.5 | 421 MiB | ok |
-| `7z-obfuscated-large` | — | — | — | — | — | — | — | 383 MiB | **failed** |
-| `7z-obfuscated-hotd` | 3.21 s | 445 ms | 40.0 | 394 ms | 13.0 | 1.56 s | 16.1 | 385 MiB | ok |
-| `rar-nested-iso` | 3.28 s | 188 ms | 29.3 | 442 ms | 19.8 | 1.83 s | 17.0 | 366 MiB | ok |
-| `rar-inner-tree` | 5.58 s | 106 ms | 37.7 | 269 ms | 20.4 | 1.65 s | 20.1 | 374 MiB | ok |
-| `rar-season-pack` | 18.80 s | 372 ms | 37.6 | 434 ms | 16.3 | 1.45 s | 35.3 | 323 MiB | ok |
-| `rar4-compressed` | — | — | — | — | — | — | — | 271 MiB | **failed** |
-| `rar5-mixed-compressed` | — | — | — | — | — | — | — | 266 MiB | **failed** |
-| `rar-encrypted-no-password` | — | — | — | — | — | — | — | 280 MiB | **failed** |
-| `huge-direct-pack` | 3.35 s | 38 ms | 43.0 | 523 ms | 17.1 | 1.39 s | 16.4 | 449 MiB | ok |
-| `damaged-partial` | 2.44 s | 72 ms | 35.3 | 343 ms | 24.5 | 1.35 s | 16.7 | 312 MiB | ok |
-| `damaged-severe` | 7.27 s | 113 ms | — | — | — | — | — | 299 MiB | ok |
-| `dead-post` | — | — | — | — | — | — | — | 308 MiB | **failed** |
-| `incomplete-archive-set` | — | — | — | — | — | — | — | 308 MiB | **failed** |
-
-<details><summary>Failures (8)</summary>
-
-- `rar-hdrenc-small` (smoke): import failed: No importable videos found.
-- `rar4-stored` (core): import failed: Unknown Rar Header: 15
-- `7z-obfuscated-large` (core): import failed: Article with message-id KrRwGaSzEcDhQpBgNuSyNlYu-1638723981550@nyuu not found.
-- `rar4-compressed` (negative): import failed: Only rar files with compression method m0 are supported.
-- `rar5-mixed-compressed` (negative): import failed: Only rar files with compression method m0 are supported.
-- `rar-encrypted-no-password` (negative): import failed: Encrypted Rar archive has no password specified.
-- `dead-post` (failure): import failed: Article with message-id 29e3f45a729949fc84873e8c78e5e7f6@ngPost not found.
-- `incomplete-archive-set` (failure): import failed: Only rar files with compression method m0 are supported.
-
-</details>
-
-### AltMount
-
-`altmount` · Go · version `4b42c67` · serving: webdav · runtime: source · startup 554 ms
-
-**Own set**: 17 entries, median post 25.3 GiB · click&rarr;byte 11.98 s (shared population: 8.63 s, 0.72×) · seq 32.1 MB/s · CPU 6.9 s/GiB
+**Own set**: 20 entries, median post 26.3 GiB · click&rarr;byte 3.56 s (shared population: 2.10 s, 0.59×) · seq 31.9 MB/s · CPU 46.3 s/GiB
 
 Medians over the entries *this application served*, so they are not comparable
 across rows. Import and click&rarr;byte scale with post size, so an application
@@ -716,188 +534,58 @@ it survived; the multiplier is the size of that distortion.
 
 | Entry | Import | Cold TTFB | Seq MB/s | Seek TTFB | Playback p05 | To buffer | CPU s/GiB | Peak RSS | Status |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| `plain-small` | 6.56 s | 298 ms | 40.2 | 471 ms | 28.5 | 1.99 s | 5.0 | 141 MiB | ok |
-| `rar-named-small` | — | — | — | — | — | — | — | 148 MiB | **failed** |
-| `rar-hdrenc-small` | — | — | — | — | — | — | — | 171 MiB | **failed** |
-| `7z-obfuscated-small` | 5.93 s | 390 ms | 41.9 | 342 ms | 32.7 | 1.75 s | 8.1 | 180 MiB | ok |
-| `plain-medium` | 2.55 s | 324 ms | 42.1 | 319 ms | 27.2 | 1.53 s | 5.1 | 218 MiB | ok |
-| `plain-season-pack` | 16.41 s | 721 ms | 40.4 | 585 ms | 26.2 | 1.68 s | 6.8 | 345 MiB | ok |
-| `rar-stored-movie` | 7.76 s | 561 ms | 37.9 | 425 ms | 9.7 | 1.64 s | 5.5 | 362 MiB | ok |
-| `rar4-stored` | — | — | — | — | — | — | — | 393 MiB | **failed** |
-| `rar4-inner-obfuscated` | 8.12 s | 509 ms | 31.0 | 677 ms | 27.0 | 1.78 s | 5.2 | 488 MiB | ok |
-| `rar-identity-grouped` | 11.50 s | 477 ms | 22.9 | 851 ms | 4.3 | 2.88 s | 7.0 | 437 MiB | ok |
-| `rar4-obfuscated-volumes` | 7.86 s | 298 ms | 18.3 | 721 ms | 0.6 | 2.74 s | 6.9 | 534 MiB | ok |
-| `rar-numeric-extensions` | — | — | — | — | — | — | — | 638 MiB | **failed** |
-| `7z-plain-header` | 2.81 s | 747 ms | 20.9 | 728 ms | 7.7 | 2.77 s | 6.0 | 735 MiB | ok |
-| `7z-plain-large` | 8.68 s | 518 ms | 17.7 | 698 ms | 8.1 | 2.75 s | 9.5 | 704 MiB | ok |
-| `7z-split-compressed-header` | 30.77 s | 347 ms | 37.2 | 446 ms | 0.4 | 3.74 s | 11.2 | 1402 MiB | ok |
-| `7z-header-encrypted` | 13.02 s | 339 ms | — | — | — | — | — | 731 MiB | ok |
-| `rar-hdrenc-large` | — | — | — | — | — | — | — | 1480 MiB | **failed** |
-| `rar-hdrenc-obfuscated` | 31.35 s | 256 ms | 32.3 | 1.14 s | 13.0 | 3.01 s | 12.5 | 1491 MiB | ok |
-| `7z-obfuscated-large` | 23.90 s | 543 ms | 22.7 | 829 ms | 17.3 | 2.08 s | 11.9 | 1494 MiB | ok |
-| `7z-obfuscated-hotd` | 11.35 s | 676 ms | 23.2 | 505 ms | 12.2 | 1.69 s | 5.6 | 772 MiB | ok |
-| `rar-nested-iso` | — | — | — | — | — | — | — | 888 MiB | **failed** |
-| `rar-inner-tree` | — | — | — | — | — | — | — | 1085 MiB | **failed** |
-| `rar-season-pack` | 25.91 s | 380 ms | 31.9 | 412 ms | 23.1 | 1.67 s | 8.7 | 1949 MiB | ok |
-| `rar4-compressed` | — | — | — | — | — | — | — | 1073 MiB | **failed** |
-| `rar5-mixed-compressed` | — | — | — | — | — | — | — | 745 MiB | **failed** |
-| `rar-encrypted-no-password` | — | — | — | — | — | — | — | 1161 MiB | **failed** |
-| `huge-direct-pack` | 34.61 s | 475 ms | 40.0 | 549 ms | 30.8 | 1.48 s | 12.3 | 1612 MiB | ok |
-| `damaged-partial` | 3.85 s | 267 ms | 22.2 | 917 ms | 13.9 | 3.35 s | 5.4 | 947 MiB | ok |
-| `damaged-severe` | 22.95 s | 612 ms | — | — | — | — | — | 878 MiB | ok |
-| `dead-post` | — | — | — | — | — | — | — | 916 MiB | **failed** |
-| `incomplete-archive-set` | — | — | — | — | — | — | — | 965 MiB | **failed** |
-
-<details><summary>Failures (12)</summary>
-
-- `rar-named-small` (smoke): import failed: failed to iterate RAR archive "Gilmore.Girls.2000.S01E17.1080p.NF.WEB-DL.H264.SDR.DDP.2.0.English-HONE.part01.rar": rardecode: bad volume number
-- `rar-hdrenc-small` (smoke): import failed: archive contains no files with allowed extensions (found: [(no extension)], allowed: [.mkv .mp4 .avi .ts .m4v .mov .wmv .mpg .mpeg .xvid .rm .rmvb .asf .asx .wtv .mk3d .dvr-ms .mp3 .flac .m4a .epub .pdf .cbz])
-- `rar4-stored` (core): import failed: failed to iterate RAR archive "Dont.Be.Afraid.of.the.Dark.2010.BRRip.XviD-F0RFUN.rar": All attempts fail: #1: nntp: yEnc CRC mismatch #2: nntp: yEnc CRC mismatch
-- `rar-numeric-extensions` (core): import failed: no files were successfully processed (all files failed validation)
-- `rar-hdrenc-large` (core): import failed: archive contains no files with allowed extensions (found: [.bdmv .clpi .m2ts .mpls .xml .jpg], allowed: [.mkv .mp4 .avi .ts .m4v .mov .wmv .mpg .mpeg .xvid .rm .rmvb .asf .asx .wtv .mk3d .dvr-ms .mp3 .flac .m4a .epub .pdf .cbz])
-- `rar-nested-iso` (core): import failed: archive contains no files with allowed extensions (found: [.m2ts], allowed: [.mkv .mp4 .avi .ts .m4v .mov .wmv .mpg .mpeg .xvid .rm .rmvb .asf .asx .wtv .mk3d .dvr-ms .mp3 .flac .m4a .epub .pdf .cbz])
-- `rar-inner-tree` (core): no video found under /bench/rar-inner-tree
-- `rar4-compressed` (negative): import failed: no files were successfully processed (all files failed validation)
-- `rar5-mixed-compressed` (negative): import failed: compressed files are not supported: Undercover.Lover.S01E04.DUTCH.1080p.WEB.h264-SOLEM/Undercover.Lover.S01E04.DUTCH.1080p.WEB.h264-SOLEM.mkv (uses rar5.0 compression)
-- `rar-encrypted-no-password` (negative): import failed: failed to iterate RAR archive "pB2nvBcqwqGbAiF87F6oE.part001.rar": rardecode: archive encrypted, password required
-- `dead-post` (failure): import failed: fast-fail segment check failed: no regular files were successfully processed (all files failed validation)
-- `incomplete-archive-set` (failure): import failed: compressed files are not supported: The Falcon And The Winter Soldier S01 2160p WEB-DL HDR 10bit x265 HEVC DDP5 1 Atmos-PHOCiS/The Falcon And The Winter Soldier S01E01 2160p WEB-DL HDR 10bit x265 HEVC DDP5 1 Atmos-PHOCiS.mkv (uses rar5.0 compression)
-
-</details>
-
-### AIOStreams
-
-`aiostreams` · TypeScript · version `9e59c4a` · serving: http-range · runtime: source · startup 7.78 s
-
-**Own set**: 24 entries, median post 26.3 GiB · click&rarr;byte 1.20 s (shared population: 983 ms, 0.82×) · seq 43.4 MB/s · CPU 8.5 s/GiB
-
-Medians over the entries *this application served*, so they are not comparable
-across rows. Import and click&rarr;byte scale with post size, so an application
-that fails the large entries is credited with the fast medians of the small ones
-it survived; the multiplier is the size of that distortion.
-
-| Entry | Import | Cold TTFB | Seq MB/s | Seek TTFB | Playback p05 | To buffer | CPU s/GiB | Peak RSS | Status |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| `plain-small` | 1.08 s | 199 ms | 47.2 | 517 ms | 29.4 | 1.44 s | 8.8 | 386 MiB | ok |
-| `rar-named-small` | 807 ms | 168 ms | 46.0 | 326 ms | 31.2 | 1.33 s | 5.4 | 406 MiB | ok |
-| `rar-hdrenc-small` | 794 ms | 338 ms | 46.8 | 38 ms | 41.7 | 262 ms | 9.8 | 470 MiB | ok |
-| `7z-obfuscated-small` | 871 ms | 184 ms | 53.6 | 23 ms | — | 185 ms | 8.9 | 502 MiB | ok |
-| `plain-medium` | 301 ms | 118 ms | 45.8 | 137 ms | 23.5 | 1.36 s | 9.3 | 538 MiB | ok |
-| `plain-season-pack` | 707 ms | 199 ms | 45.5 | 222 ms | 19.4 | 2.07 s | 16.6 | 504 MiB | ok |
-| `rar-stored-movie` | 580 ms | 408 ms | 41.7 | 650 ms | 15.2 | 2.40 s | 8.7 | 558 MiB | ok |
-| `rar4-stored` | 281 ms | 172 ms | 42.7 | 516 ms | 40.0 | 1.42 s | 7.8 | 551 MiB | ok |
-| `rar4-inner-obfuscated` | 798 ms | 232 ms | 41.6 | 555 ms | 26.2 | 1.48 s | 6.1 | 529 MiB | ok |
-| `rar-identity-grouped` | 1.59 s | 1.12 s | 47.5 | 549 ms | 26.7 | 1.37 s | 7.6 | 555 MiB | ok |
-| `rar4-obfuscated-volumes` | 1.36 s | 203 ms | 28.7 | 404 ms | 23.1 | 1.86 s | 7.5 | 521 MiB | ok |
-| `rar-numeric-extensions` | 3.57 s | 326 ms | 43.1 | 567 ms | 33.4 | 1.60 s | 7.8 | 516 MiB | ok |
-| `7z-plain-header` | 540 ms | 207 ms | 43.2 | 551 ms | 2.2 | 1.93 s | 6.7 | 519 MiB | ok |
-| `7z-plain-large` | 620 ms | 225 ms | 43.6 | 559 ms | 9.8 | 1.75 s | 6.8 | 532 MiB | ok |
-| `7z-split-compressed-header` | 654 ms | 325 ms | 38.1 | 503 ms | 30.5 | 1.70 s | 7.2 | 557 MiB | ok |
-| `7z-header-encrypted` | 563 ms | 209 ms | 41.5 | 465 ms | 20.6 | 1.99 s | 13.2 | 621 MiB | ok |
-| `rar-hdrenc-large` | 5.69 s | 397 ms | 44.4 | 519 ms | 30.2 | 1.31 s | 13.9 | 664 MiB | ok |
-| `rar-hdrenc-obfuscated` | 2.04 s | 448 ms | 42.2 | 813 ms | 25.2 | 1.49 s | 13.1 | 708 MiB | ok |
-| `7z-obfuscated-large` | 12.46 s | 303 ms | 46.6 | 572 ms | 32.7 | 1.42 s | 9.9 | 717 MiB | ok |
-| `7z-obfuscated-hotd` | 1.90 s | 291 ms | 47.1 | 305 ms | 17.4 | 1.81 s | 12.6 | 785 MiB | ok |
-| `rar-nested-iso` | 695 ms | 605 ms | 34.1 | 568 ms | 26.9 | 1.50 s | 8.3 | 786 MiB | ok |
-| `rar-inner-tree` | 2.99 s | 778 ms | 49.9 | 285 ms | 23.6 | 2.06 s | 8.1 | 834 MiB | ok |
-| `rar-season-pack` | 2.45 s | 72 ms | 42.2 | 339 ms | 31.0 | 1.86 s | 7.8 | 803 MiB | ok |
-| `rar4-compressed` | — | — | — | — | — | — | — | — | **failed** |
-| `rar5-mixed-compressed` | — | — | — | — | — | — | — | 800 MiB | **failed** |
-| `rar-encrypted-no-password` | — | — | — | — | — | — | — | — | **failed** |
-| `huge-direct-pack` | 2.30 s | 981 ms | 38.8 | 161 ms | 32.4 | 1.45 s | 10.8 | 1090 MiB | ok |
-| `damaged-partial` | 1.86 s | 157 ms | 45.0 | 525 ms | 33.5 | 1.77 s | 6.6 | 982 MiB | ok |
-| `damaged-severe` | 4.01 s | 389 ms | — | — | — | — | — | 910 MiB | ok |
-| `dead-post` | — | — | — | — | — | — | — | 903 MiB | **failed** |
-| `incomplete-archive-set` | — | — | — | — | — | — | — | 905 MiB | **failed** |
-
-<details><summary>Failures (5)</summary>
-
-- `rar4-compressed` (negative): import failed: Archive is compressed: not streamable [archive_compressed]
-- `rar5-mixed-compressed` (negative): import failed: Archive is compressed: not streamable [archive_compressed]
-- `rar-encrypted-no-password` (negative): import failed: Archive is encrypted: password required [archive_encrypted]
-- `dead-post` (failure): import failed: Missing on providers: 8/8 sampled segments unavailable (incomplete or removed) [missing_on_providers]
-- `incomplete-archive-set` (failure): import failed: Archive incomplete: volumes missing from the post [incomplete_archive]
-
-</details>
-
-### Comet (feat/usenet)
-
-`comet` · Python + Rust · version `ed1ede7` (`ed1ede7`) · serving: http-range · runtime: docker · CPU/RSS from container cgroups · startup 99.64 s
-
-> **Not a like-for-like result.** Comet does not complete a full-corpus pass: its engine keeps materialising after the harness has measured an entry, and under sustained load it deadlocks its own SQLite (shipped default) and does not recover. Entries after the first large materialisation failed for reasons belonging to earlier ones. Only the six status-clip failures that reproduced across independent runs are capability results.
-
-**Own set**: 10 entries, median post 17.1 GiB · click&rarr;byte 3.86 s (shared population: 3.59 s, 0.93×) · seq 18.7 MB/s · CPU 55.0 s/GiB
-
-Medians over the entries *this application served*, so they are not comparable
-across rows. Import and click&rarr;byte scale with post size, so an application
-that fails the large entries is credited with the fast medians of the small ones
-it survived; the multiplier is the size of that distortion.
-
-| Entry | Import | Cold TTFB | Seq MB/s | Seek TTFB | Playback p05 | To buffer | CPU s/GiB | Peak RSS | Status |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| `plain-small` | — | — | — | — | — | — | — | 340 MiB | **failed** |
-| `rar-named-small` | 2.67 s | 199 ms | 8.3 | 393 ms | 1.2 | 2.79 s | 62.4 | 740 MiB | ok |
-| `rar-hdrenc-small` | — | — | — | — | — | — | — | 730 MiB | **failed** |
-| `7z-obfuscated-small` | — | — | — | — | — | — | — | 682 MiB | **failed** |
-| `plain-medium` | 6.05 s | 92 ms | 16.5 | 365 ms | 1.2 | 3.93 s | 52.4 | 797 MiB | ok |
-| `plain-season-pack` | 4.25 s | 52 ms | 18.7 | 799 ms | 1.2 | 6.68 s | 55.0 | 800 MiB | ok |
-| `rar-stored-movie` | 2.94 s | 201 ms | 22.2 | 435 ms | 1.3 | 5.82 s | 55.2 | 800 MiB | ok |
-| `rar4-stored` | — | — | — | — | — | — | — | 727 MiB | **failed** |
-| `rar4-inner-obfuscated` | 1.63 s | 186 ms | 13.9 | 524 ms | 2.0 | 2.19 s | 51.0 | 798 MiB | ok |
-| `rar-identity-grouped` | — | — | — | — | — | — | — | — | **failed** |
-| `rar4-obfuscated-volumes` | — | — | — | — | — | — | — | 706 MiB | **failed** |
-| `rar-numeric-extensions` | 6.36 s | 1.98 s | 26.4 | 544 ms | 1.0 | 3.74 s | 67.6 | 860 MiB | ok |
-| `7z-plain-header` | 1.35 s | 219 ms | 28.5 | 450 ms | 1.0 | 2.41 s | 41.9 | 872 MiB | ok |
-| `7z-plain-large` | 3.76 s | 265 ms | 22.1 | 434 ms | 1.2 | 3.13 s | 47.7 | 891 MiB | ok |
-| `7z-split-compressed-header` | 10.35 s | 882 ms | 14.8 | 527 ms | 0.7 | 5.83 s | 75.0 | 881 MiB | ok |
-| `7z-header-encrypted` | 3.43 s | 254 ms | — | 527 ms | — | — | — | 875 MiB | ok |
-| `rar-hdrenc-large` | — | — | — | — | — | — | — | 1613 MiB | **failed** |
-| `rar-hdrenc-obfuscated` | — | — | — | — | — | — | — | 1455 MiB | **failed** |
-| `7z-obfuscated-large` | — | — | — | — | — | — | — | 1356 MiB | **failed** |
-| `7z-obfuscated-hotd` | — | — | — | — | — | — | — | — | **failed** |
-| `rar-nested-iso` | — | — | — | — | — | — | — | 1486 MiB | **failed** |
-| `rar-inner-tree` | — | — | — | — | — | — | — | 3458 MiB | **failed** |
-| `rar-season-pack` | — | — | — | — | — | — | — | 1567 MiB | **failed** |
-| `rar4-compressed` | — | — | — | — | — | — | — | — | **failed** |
+| `plain-small` | 1.53 s | 71 ms | 29.5 | 258 ms | 22.7 | 1.83 s | 12.4 | 615 MiB | ok |
+| `rar-named-small` | 1.84 s | 120 ms | 31.3 | 402 ms | 23.1 | 1.31 s | 12.2 | 673 MiB | ok |
+| `rar-hdrenc-small` | — | — | — | — | — | — | — | 646 MiB | **failed** |
+| `7z-obfuscated-small` | 648 ms | 6 ms | — | 83 ms | 6.4 | 2.42 s | 74.2 | 603 MiB | ok |
+| `plain-medium` | 544 ms | 21 ms | 36.3 | 197 ms | 25.1 | 1.69 s | 4.3 | 551 MiB | ok |
+| `plain-season-pack` | 2.17 s | 245 ms | 42.7 | 371 ms | 21.5 | 1.46 s | 7.6 | 658 MiB | ok |
+| `rar-stored-movie` | 2.39 s | 238 ms | 34.2 | 486 ms | 23.4 | 1.64 s | 18.4 | 768 MiB | ok |
+| `rar4-stored` | — | — | — | — | — | — | — | 749 MiB | **failed** |
+| `rar4-inner-obfuscated` | 1.50 s | 107 ms | 32.1 | 387 ms | 25.4 | 1.58 s | 14.5 | 801 MiB | ok |
+| `rar-identity-grouped` | 1.95 s | 151 ms | — | 393 ms | — | — | — | 699 MiB | ok |
+| `rar4-obfuscated-volumes` | 1.72 s | 161 ms | 34.4 | 430 ms | 24.0 | 2.17 s | 16.1 | 747 MiB | ok |
+| `rar-numeric-extensions` | 6.82 s | 705 ms | 32.0 | 1.03 s | 19.8 | 2.29 s | 42.2 | 904 MiB | ok |
+| `7z-plain-header` | 769 ms | 16 ms | 8.1 | 108 ms | — | — | 91.1 | 825 MiB | ok |
+| `7z-plain-large` | 4.44 s | 159 ms | 8.1 | 295 ms | 4.7 | 5.44 s | 83.0 | 653 MiB | ok |
+| `7z-split-compressed-header` | 51.40 s | 388 ms | 9.5 | 467 ms | 5.3 | 4.55 s | 101.0 | 1476 MiB | ok |
+| `7z-header-encrypted` | 4.44 s | 53 ms | — | 174 ms | — | — | — | 757 MiB | ok |
+| `rar-hdrenc-large` | 126.36 s | 2.29 s | 16.5 | 2.80 s | 2.1 | 5.31 s | 168.1 | 2054 MiB | ok |
+| `rar-hdrenc-obfuscated` | — | — | — | — | — | — | — | 2018 MiB | **failed** |
+| `7z-obfuscated-large` | — | — | — | — | — | — | — | 1944 MiB | **failed** |
+| `7z-obfuscated-hotd` | 17.02 s | 697 ms | 7.3 | 355 ms | 2.2 | 4.70 s | 54.0 | 1280 MiB | ok |
+| `rar-nested-iso` | 4.24 s | 537 ms | 32.8 | 865 ms | 3.6 | 3.60 s | 53.8 | 912 MiB | ok |
+| `rar-inner-tree` | 44.18 s | 1.24 s | 28.3 | 1.36 s | 4.3 | 2.81 s | 50.5 | 1425 MiB | ok |
+| `rar-season-pack` | 296.56 s | 58.69 s | 31.9 | 2.50 s | 21.8 | 3.98 s | 128.8 | 1816 MiB | ok |
+| `rar4-compressed` | — | — | — | — | — | — | — | 1261 MiB | **failed** |
 | `rar5-mixed-compressed` | — | — | — | — | — | — | — | — | **failed** |
-| `rar-encrypted-no-password` | — | — | — | — | — | — | — | — | **failed** |
-| `huge-direct-pack` | — | — | — | — | — | — | — | — | **failed** |
-| `damaged-partial` | — | — | — | — | — | — | — | — | **failed** |
-| `damaged-severe` | — | — | — | — | — | — | — | — | **failed** |
-| `dead-post` | — | — | — | — | — | — | — | — | **failed** |
+| `rar-encrypted-no-password` | — | — | — | — | — | — | — | 1271 MiB | **failed** |
+| `huge-direct-pack` | 4.79 s | 1.36 s | 35.2 | 1.56 s | 28.6 | 2.82 s | 25.8 | 1432 MiB | ok |
+| `damaged-partial` | 3.48 s | 264 ms | 37.4 | 700 ms | 22.8 | 2.14 s | 62.7 | 1192 MiB | ok |
+| `damaged-severe` | — | — | — | — | — | — | — | 786 MiB | **failed** |
+| `dead-post` | — | — | — | — | — | — | — | 1047 MiB | **failed** |
 | `incomplete-archive-set` | — | — | — | — | — | — | — | — | **failed** |
 
-<details><summary>Failures (21)</summary>
+<details><summary>Failures (10)</summary>
 
-- `plain-small` (smoke): comet answered with a status clip (421667 bytes of video/mp4), meaning it could not serve this entry
-- `rar-hdrenc-small` (smoke): comet answered with a status clip (421667 bytes of video/mp4), meaning it could not serve this entry
-- `7z-obfuscated-small` (smoke): comet answered with a status clip (421667 bytes of video/mp4), meaning it could not serve this entry
-- `rar4-stored` (core): comet answered with a status clip (421667 bytes of video/mp4), meaning it could not serve this entry
-- `rar-identity-grouped` (core): comet answered with a status clip (421667 bytes of video/mp4), meaning it could not serve this entry
-- `rar4-obfuscated-volumes` (core): comet answered with a status clip (421667 bytes of video/mp4), meaning it could not serve this entry
-- `rar-hdrenc-large` (core): fetch failed
-- `rar-hdrenc-obfuscated` (core): comet never produced a byte range for rar-hdrenc-obfuscated: last response 500 ct=text/plain; charset=utf-8
-- `7z-obfuscated-large` (core): comet answered with a status clip (421667 bytes of video/mp4), meaning it could not serve this entry
-- `7z-obfuscated-hotd` (core): comet answered with a status clip (421667 bytes of video/mp4), meaning it could not serve this entry
-- `rar-nested-iso` (core): fetch failed
-- `rar-inner-tree` (core): fetch failed
-- `rar-season-pack` (core): fetch failed
-- `rar4-compressed` (negative): fetch failed
-- `rar5-mixed-compressed` (negative): fetch failed
-- `rar-encrypted-no-password` (negative): fetch failed
-- `huge-direct-pack` (stress): fetch failed
-- `damaged-partial` (failure): fetch failed
-- `damaged-severe` (failure): fetch failed
-- `dead-post` (failure): fetch failed
-- `incomplete-archive-set` (failure): fetch failed
+- `rar-hdrenc-small` (smoke): newz status failed
+- `rar4-stored` (core): newz status failed
+- `rar-hdrenc-obfuscated` (core): newz status failed
+- `7z-obfuscated-large` (core): newz status failed
+- `rar4-compressed` (negative): newz status failed
+- `rar5-mixed-compressed` (negative): newz status failed
+- `rar-encrypted-no-password` (negative): newz status failed
+- `damaged-severe` (failure): newz status failed
+- `dead-post` (failure): newz status failed
+- `incomplete-archive-set` (failure): newz status failed
 
 </details>
 
 ### InfiniDysk
 
-`infinidysk` · C# (.NET 10) · version `1f9f45b` · serving: webdav · runtime: source · startup 7.60 s
+`infinidysk` · C# (.NET 10) · version `1f9f45b` · serving: webdav · runtime: source · startup 7.84 s
 
-**Own set**: 21 entries, median post 27.3 GiB · click&rarr;byte 4.52 s (shared population: 3.59 s, 0.79×) · seq 12.3 MB/s · CPU 26.5 s/GiB
+**Own set**: 21 entries, median post 27.3 GiB · click&rarr;byte 3.42 s (shared population: 2.31 s, 0.68×) · seq 23.5 MB/s · CPU 14.5 s/GiB
 
 Medians over the entries *this application served*, so they are not comparable
 across rows. Import and click&rarr;byte scale with post size, so an application
@@ -906,37 +594,37 @@ it survived; the multiplier is the size of that distortion.
 
 | Entry | Import | Cold TTFB | Seq MB/s | Seek TTFB | Playback p05 | To buffer | CPU s/GiB | Peak RSS | Status |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| `plain-small` | 3.32 s | 206 ms | 10.0 | 26 ms | 2.0 | 2.68 s | 46.7 | 509 MiB | ok |
-| `rar-named-small` | 1.78 s | 182 ms | 12.6 | 14 ms | 0.2 | 3.20 s | 22.8 | 527 MiB | ok |
-| `rar-hdrenc-small` | — | — | — | — | — | — | — | 536 MiB | **failed** |
-| `7z-obfuscated-small` | 1.66 s | 27 ms | 16.4 | 844 ms | 20.7 | 2.37 s | 15.7 | 544 MiB | ok |
-| `plain-medium` | 1.04 s | 26 ms | 22.7 | 17 ms | 2.1 | 3.11 s | 18.8 | 745 MiB | ok |
-| `plain-season-pack` | 4.03 s | 20 ms | 7.3 | 29 ms | 1.6 | 3.99 s | 34.3 | 865 MiB | ok |
-| `rar-stored-movie` | 1.86 s | 45 ms | 7.9 | 19 ms | 1.1 | 7.01 s | 34.6 | 885 MiB | ok |
-| `rar4-stored` | — | — | — | — | — | — | — | 802 MiB | **failed** |
-| `rar4-inner-obfuscated` | 6.30 s | 121 ms | 18.0 | 19 ms | 4.9 | 2.30 s | 14.0 | 802 MiB | ok |
-| `rar-identity-grouped` | 3.64 s | 17 ms | 7.8 | 26 ms | 0.5 | 2.69 s | 26.5 | 868 MiB | ok |
-| `rar4-obfuscated-volumes` | 2.90 s | 21 ms | 12.3 | 20 ms | 1.6 | 4.43 s | 23.6 | 876 MiB | ok |
-| `rar-numeric-extensions` | 4.74 s | 32 ms | 7.8 | 4.54 s | 1.8 | 7.47 s | 80.3 | 943 MiB | ok |
-| `7z-plain-header` | 1.12 s | 13 ms | 14.5 | 18 ms | 2.7 | 2.99 s | 20.8 | 841 MiB | ok |
-| `7z-plain-large` | 13.96 s | 20 ms | 14.3 | 32 ms | 0.4 | 3.15 s | 35.4 | 879 MiB | ok |
-| `7z-split-compressed-header` | 41.05 s | 29 ms | 10.3 | 36 ms | 1.3 | 3.97 s | 33.5 | 976 MiB | ok |
-| `7z-header-encrypted` | 11.50 s | 26 ms | 16.9 | 27 ms | 1.4 | 2.60 s | 25.5 | 881 MiB | ok |
-| `rar-hdrenc-large` | 18.60 s | 28 ms | 11.9 | 33 ms | 2.6 | 3.03 s | 37.0 | 1147 MiB | ok |
-| `rar-hdrenc-obfuscated` | 3.00 s | 1.52 s | 12.2 | 53 ms | 1.1 | 1.69 s | 24.1 | 1108 MiB | ok |
-| `7z-obfuscated-large` | — | — | — | — | — | — | — | 1149 MiB | **failed** |
-| `7z-obfuscated-hotd` | 11.51 s | 27 ms | 11.3 | 21 ms | 2.0 | 2.79 s | 23.6 | 1237 MiB | ok |
-| `rar-nested-iso` | 3.41 s | 111 ms | 9.0 | 2.54 s | 8.8 | 3.02 s | 28.8 | 1190 MiB | ok |
-| `rar-inner-tree` | 5.31 s | 4 ms | 14.7 | 20 ms | 4.2 | 3.59 s | 32.3 | 1269 MiB | ok |
-| `rar-season-pack` | 21.75 s | 4 ms | 28.3 | 19 ms | 1.6 | 1.52 s | 24.1 | 1274 MiB | ok |
-| `rar4-compressed` | — | — | — | — | — | — | — | 1178 MiB | **failed** |
-| `rar5-mixed-compressed` | — | — | — | — | — | — | — | 1178 MiB | **failed** |
-| `rar-encrypted-no-password` | — | — | — | — | — | — | — | 1197 MiB | **failed** |
-| `huge-direct-pack` | 5.66 s | 16 ms | 20.2 | 24 ms | 4.1 | 3.31 s | 31.4 | 1569 MiB | ok |
-| `damaged-partial` | 2.68 s | 39 ms | 7.0 | 1.49 s | 1.2 | 1.89 s | 27.5 | 1555 MiB | ok |
-| `damaged-severe` | — | — | — | — | — | — | — | 1522 MiB | **failed** |
-| `dead-post` | — | — | — | — | — | — | — | 1524 MiB | **failed** |
-| `incomplete-archive-set` | — | — | — | — | — | — | — | 1532 MiB | **failed** |
+| `plain-small` | 2.05 s | 267 ms | 24.9 | 35 ms | 2.0 | 2.26 s | 20.6 | 592 MiB | ok |
+| `rar-named-small` | 1.45 s | 231 ms | 29.9 | 18 ms | 3.1 | 1.54 s | 10.7 | 579 MiB | ok |
+| `rar-hdrenc-small` | — | — | — | — | — | — | — | 581 MiB | **failed** |
+| `7z-obfuscated-small` | 1.32 s | 26 ms | 23.2 | 826 ms | 35.4 | 1.75 s | 16.5 | 588 MiB | ok |
+| `plain-medium` | 916 ms | 31 ms | 31.7 | 19 ms | 26.0 | 2.93 s | 11.4 | 676 MiB | ok |
+| `plain-season-pack` | 2.82 s | 22 ms | 19.1 | 27 ms | 10.8 | 2.83 s | 14.5 | 881 MiB | ok |
+| `rar-stored-movie` | 3.38 s | 38 ms | 21.3 | 22 ms | 3.4 | 3.15 s | 15.7 | 850 MiB | ok |
+| `rar4-stored` | — | — | — | — | — | — | — | 838 MiB | **failed** |
+| `rar4-inner-obfuscated` | 1.44 s | 224 ms | 28.0 | 13 ms | 16.5 | 1.95 s | 10.0 | 840 MiB | ok |
+| `rar-identity-grouped` | 1.80 s | 18 ms | 20.8 | 27 ms | 3.3 | 2.47 s | 12.7 | 813 MiB | ok |
+| `rar4-obfuscated-volumes` | 2.16 s | 18 ms | 23.7 | 19 ms | 2.4 | 3.05 s | 12.4 | 768 MiB | ok |
+| `rar-numeric-extensions` | 4.24 s | 39 ms | 19.0 | 3.52 s | 3.5 | 3.73 s | 19.9 | 955 MiB | ok |
+| `7z-plain-header` | 1.01 s | 15 ms | 22.9 | 20 ms | 2.4 | 3.05 s | 11.8 | 988 MiB | ok |
+| `7z-plain-large` | 9.84 s | 82 ms | 23.9 | 36 ms | 5.3 | 2.47 s | 13.4 | 838 MiB | ok |
+| `7z-split-compressed-header` | 38.31 s | 51 ms | 22.8 | 36 ms | 1.9 | 3.05 s | 16.8 | 892 MiB | ok |
+| `7z-header-encrypted` | 10.93 s | 30 ms | 24.1 | 427 ms | 2.9 | 2.65 s | 15.6 | 875 MiB | ok |
+| `rar-hdrenc-large` | 17.54 s | 31 ms | 23.5 | 31 ms | 2.7 | 2.26 s | 17.1 | 1108 MiB | ok |
+| `rar-hdrenc-obfuscated` | 2.71 s | 1.48 s | 23.6 | 43 ms | 23.9 | 1.58 s | 13.5 | 1263 MiB | ok |
+| `7z-obfuscated-large` | — | — | — | — | — | — | — | 1263 MiB | **failed** |
+| `7z-obfuscated-hotd` | 9.58 s | 26 ms | 20.7 | 20 ms | 2.3 | 2.43 s | 13.9 | 1277 MiB | ok |
+| `rar-nested-iso` | 2.48 s | 34 ms | 20.1 | 28 ms | 9.8 | 2.68 s | 15.2 | 1261 MiB | ok |
+| `rar-inner-tree` | 5.71 s | 4 ms | 21.6 | 18 ms | 11.1 | 2.54 s | 14.5 | 1153 MiB | ok |
+| `rar-season-pack` | 20.15 s | 4 ms | 33.9 | 19 ms | 2.1 | 1.34 s | 16.7 | 1173 MiB | ok |
+| `rar4-compressed` | — | — | — | — | — | — | — | — | **failed** |
+| `rar5-mixed-compressed` | — | — | — | — | — | — | — | 1071 MiB | **failed** |
+| `rar-encrypted-no-password` | — | — | — | — | — | — | — | 1076 MiB | **failed** |
+| `huge-direct-pack` | 4.82 s | 15 ms | 26.9 | 20 ms | 22.4 | 2.75 s | 15.4 | 1359 MiB | ok |
+| `damaged-partial` | 2.64 s | 40 ms | 20.0 | 820 ms | 1.5 | 1.53 s | 14.3 | 1400 MiB | ok |
+| `damaged-severe` | — | — | — | — | — | — | — | 1243 MiB | **failed** |
+| `dead-post` | — | — | — | — | — | — | — | 1253 MiB | **failed** |
+| `incomplete-archive-set` | — | — | — | — | — | — | — | 1254 MiB | **failed** |
 
 <details><summary>Failures (9)</summary>
 
@@ -947,8 +635,236 @@ it survived; the multiplier is the size of that distortion.
 - `rar5-mixed-compressed` (negative): import failed: Only rar files with compression method m0 are supported.
 - `rar-encrypted-no-password` (negative): import failed: Encrypted Rar archive has no password specified.
 - `damaged-severe` (failure): import failed: Article with message-id xcecGBQnwBIYE.8fjOSbt$yhomo1x1@4Zkt8fJ.3J168q not found. Server responded: 430 No Such Article
-- `dead-post` (failure): import failed: Missing articles: 1 important file(s) have missing segments across all providers (e.g. OB7ucO5ujqhRQOnlY.part08.rar). NZB is likely DMCA'd or expired.
+- `dead-post` (failure): import failed: Missing articles: 1 important file(s) have missing segments across all providers (e.g. OB7ucO5ujqhRQOnlY.part05.rar). NZB is likely DMCA'd or expired.
 - `incomplete-archive-set` (failure): import failed: Only rar files with compression method m0 are supported.
+
+</details>
+
+### nzbdav
+
+`nzbdav` · C# (.NET 10) · version `794948b` · serving: webdav · runtime: source · startup 3.30 s
+
+**Own set**: 21 entries, median post 27.3 GiB · click&rarr;byte 2.69 s (shared population: 1.60 s, 0.60×) · seq 41.5 MB/s · CPU 14.4 s/GiB
+
+Medians over the entries *this application served*, so they are not comparable
+across rows. Import and click&rarr;byte scale with post size, so an application
+that fails the large entries is credited with the fast medians of the small ones
+it survived; the multiplier is the size of that distortion.
+
+| Entry | Import | Cold TTFB | Seq MB/s | Seek TTFB | Playback p05 | To buffer | CPU s/GiB | Peak RSS | Status |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| `plain-small` | 1.41 s | 103 ms | 44.1 | 423 ms | 28.6 | 1.09 s | 20.9 | 261 MiB | ok |
+| `rar-named-small` | 1.44 s | 164 ms | 39.4 | 356 ms | 24.4 | 1.52 s | 13.9 | 277 MiB | ok |
+| `rar-hdrenc-small` | — | — | — | — | — | — | — | 251 MiB | **failed** |
+| `7z-obfuscated-small` | 562 ms | 82 ms | 26.3 | 171 ms | 21.9 | 1.10 s | 26.6 | 263 MiB | ok |
+| `plain-medium` | 1.01 s | 34 ms | 26.5 | 316 ms | 28.3 | 1.40 s | 9.4 | 282 MiB | ok |
+| `plain-season-pack` | 2.25 s | 74 ms | 36.4 | 540 ms | 8.8 | 1.82 s | 14.4 | 316 MiB | ok |
+| `rar-stored-movie` | 2.12 s | 107 ms | 41.0 | 283 ms | 27.9 | 1.63 s | 12.1 | 314 MiB | ok |
+| `rar4-stored` | — | — | — | — | — | — | — | 278 MiB | **failed** |
+| `rar4-inner-obfuscated` | 1.32 s | 48 ms | 38.0 | 380 ms | 18.3 | 1.58 s | 13.6 | 301 MiB | ok |
+| `rar-identity-grouped` | 1.24 s | 47 ms | — | 580 ms | — | — | — | 298 MiB | ok |
+| `rar4-obfuscated-volumes` | 1.36 s | 56 ms | 42.2 | 365 ms | 31.3 | 1.38 s | 10.8 | 312 MiB | ok |
+| `rar-numeric-extensions` | 4.42 s | 101 ms | 42.3 | 284 ms | 26.7 | 1.31 s | 15.5 | 353 MiB | ok |
+| `7z-plain-header` | 680 ms | 48 ms | 41.1 | 315 ms | 9.5 | 1.58 s | 12.5 | 318 MiB | ok |
+| `7z-plain-large` | 2.95 s | 60 ms | 41.6 | 332 ms | 32.7 | 1.26 s | 13.3 | 324 MiB | ok |
+| `7z-split-compressed-header` | 8.55 s | 70 ms | 38.4 | 297 ms | 23.9 | 1.84 s | 19.2 | 349 MiB | ok |
+| `7z-header-encrypted` | 3.38 s | 112 ms | — | 360 ms | — | — | — | 312 MiB | ok |
+| `rar-hdrenc-large` | 15.44 s | 117 ms | 44.6 | 328 ms | 32.4 | 1.20 s | 33.3 | 378 MiB | ok |
+| `rar-hdrenc-obfuscated` | 3.50 s | 122 ms | 43.9 | 503 ms | 31.3 | 1.25 s | 17.9 | 448 MiB | ok |
+| `7z-obfuscated-large` | — | — | — | — | — | — | — | 354 MiB | **failed** |
+| `7z-obfuscated-hotd` | 2.78 s | 47 ms | 41.5 | 284 ms | 33.5 | 827 ms | 16.1 | 364 MiB | ok |
+| `rar-nested-iso` | 2.63 s | 59 ms | 46.3 | 367 ms | 27.9 | 1.27 s | 16.7 | 361 MiB | ok |
+| `rar-inner-tree` | 5.27 s | 120 ms | 41.1 | 318 ms | 34.7 | 1.36 s | 13.5 | 387 MiB | ok |
+| `rar-season-pack` | 13.72 s | 245 ms | 42.3 | 264 ms | 28.3 | 1.08 s | 23.5 | 331 MiB | ok |
+| `rar4-compressed` | — | — | — | — | — | — | — | — | **failed** |
+| `rar5-mixed-compressed` | — | — | — | — | — | — | — | 279 MiB | **failed** |
+| `rar-encrypted-no-password` | — | — | — | — | — | — | — | 274 MiB | **failed** |
+| `huge-direct-pack` | 3.86 s | 39 ms | 43.4 | 350 ms | 33.0 | 1.21 s | 14.3 | 436 MiB | ok |
+| `damaged-partial` | 2.53 s | 45 ms | 36.2 | 213 ms | 30.1 | 1.17 s | 12.9 | 301 MiB | ok |
+| `damaged-severe` | 7.18 s | 96 ms | — | — | — | — | — | 284 MiB | ok |
+| `dead-post` | — | — | — | — | — | — | — | 291 MiB | **failed** |
+| `incomplete-archive-set` | — | — | — | — | — | — | — | 287 MiB | **failed** |
+
+<details><summary>Failures (8)</summary>
+
+- `rar-hdrenc-small` (smoke): import failed: No importable videos found.
+- `rar4-stored` (core): import failed: Unknown Rar Header: 15
+- `7z-obfuscated-large` (core): import failed: Article with message-id KrRwGaSzEcDhQpBgNuSyNlYu-1638723981550@nyuu not found.
+- `rar4-compressed` (negative): import failed: Only rar files with compression method m0 are supported.
+- `rar5-mixed-compressed` (negative): import failed: Only rar files with compression method m0 are supported.
+- `rar-encrypted-no-password` (negative): import failed: Encrypted Rar archive has no password specified.
+- `dead-post` (failure): import failed: Article with message-id 06c57c2829234b71b697a501f941337b@ngPost not found.
+- `incomplete-archive-set` (failure): import failed: Only rar files with compression method m0 are supported.
+
+</details>
+
+### Decypharr
+
+`decypharr` · Go · version `v2.5` (`0dd1cbb`) · serving: webdav · runtime: docker · CPU/RSS from container cgroups · startup 2.75 s
+
+**Own set**: 17 entries, median post 25.3 GiB · click&rarr;byte 10.54 s (shared population: 10.30 s, 0.98×) · seq 41.6 MB/s · CPU 26.8 s/GiB
+
+Medians over the entries *this application served*, so they are not comparable
+across rows. Import and click&rarr;byte scale with post size, so an application
+that fails the large entries is credited with the fast medians of the small ones
+it survived; the multiplier is the size of that distortion.
+
+| Entry | Import | Cold TTFB | Seq MB/s | Seek TTFB | Playback p05 | To buffer | CPU s/GiB | Peak RSS | Status |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| `plain-small` | 4.72 s | 247 ms | 25.1 | 284 ms | 3.1 | 1.08 s | 25.0 | 87 MiB | ok |
+| `rar-named-small` | 5.09 s | 225 ms | 17.0 | 267 ms | 1.5 | 1.04 s | 26.2 | 70 MiB | ok |
+| `rar-hdrenc-small` | — | — | — | — | — | — | — | 72 MiB | **failed** |
+| `7z-obfuscated-small` | — | — | — | — | — | — | — | 73 MiB | **failed** |
+| `plain-medium` | 4.12 s | 256 ms | 20.4 | 311 ms | 19.6 | 1.15 s | 23.3 | 95 MiB | ok |
+| `plain-season-pack` | — | — | — | — | — | — | — | 167 MiB | **failed** |
+| `rar-stored-movie` | 10.26 s | 277 ms | 41.6 | 259 ms | 1.5 | 1.11 s | 27.6 | 177 MiB | ok |
+| `rar4-stored` | 5.18 s | 248 ms | — | 469 ms | — | — | — | 230 MiB | ok |
+| `rar4-inner-obfuscated` | 6.09 s | 183 ms | 39.5 | 313 ms | 0.8 | 1.50 s | 27.7 | 201 MiB | ok |
+| `rar-identity-grouped` | 10.34 s | 320 ms | — | 257 ms | — | — | — | 206 MiB | ok |
+| `rar4-obfuscated-volumes` | 9.79 s | 274 ms | 42.6 | 197 ms | 3.5 | 1.33 s | 26.8 | 234 MiB | ok |
+| `rar-numeric-extensions` | 20.89 s | 277 ms | 23.2 | 363 ms | 2.8 | 1.56 s | 31.0 | 292 MiB | ok |
+| `7z-plain-header` | 2.08 s | 266 ms | 27.8 | 307 ms | 2.9 | 1.92 s | 25.4 | 311 MiB | ok |
+| `7z-plain-large` | 15.34 s | 331 ms | 43.8 | 303 ms | 6.9 | 2.12 s | 24.7 | 361 MiB | ok |
+| `7z-split-compressed-header` | 16.52 s | 357 ms | 45.6 | 287 ms | 14.7 | 1.22 s | 24.7 | 463 MiB | ok |
+| `7z-header-encrypted` | — | — | — | — | — | — | — | 442 MiB | **failed** |
+| `rar-hdrenc-large` | — | — | — | — | — | — | — | 612 MiB | **failed** |
+| `rar-hdrenc-obfuscated` | — | — | — | — | — | — | — | 687 MiB | **failed** |
+| `7z-obfuscated-large` | 19.57 s | 354 ms | 46.8 | 347 ms | 34.7 | 1.44 s | 28.5 | 743 MiB | ok |
+| `7z-obfuscated-hotd` | — | — | — | — | — | — | — | 730 MiB | **failed** |
+| `rar-nested-iso` | 3.42 s | 524 ms | 44.7 | 3 ms | — | 250 ms | 19.8 | 781 MiB | ok |
+| `rar-inner-tree` | 52.58 s | 449 ms | 45.1 | 258 ms | 26.0 | 1.54 s | 29.5 | 1078 MiB | ok |
+| `rar-season-pack` | 26.44 s | 231 ms | 47.2 | 317 ms | 8.9 | 2.20 s | 33.7 | 1097 MiB | ok |
+| `rar4-compressed` | — | — | — | — | — | — | — | 1062 MiB | **failed** |
+| `rar5-mixed-compressed` | — | — | — | — | — | — | — | 1090 MiB | **failed** |
+| `rar-encrypted-no-password` | — | — | — | — | — | — | — | 1145 MiB | **failed** |
+| `huge-direct-pack` | 112.79 s | 471 ms | 40.9 | 262 ms | 29.5 | 2.18 s | 29.0 | 1608 MiB | ok |
+| `damaged-partial` | 5.13 s | 281 ms | 41.4 | 208 ms | 23.4 | 1.51 s | 25.9 | 1586 MiB | ok |
+| `damaged-severe` | 14.32 s | 265 ms | — | — | — | — | — | 1587 MiB | ok |
+| `dead-post` | — | — | — | — | — | — | — | 1576 MiB | **failed** |
+| `incomplete-archive-set` | — | — | — | — | — | — | — | 1576 MiB | **failed** |
+
+<details><summary>Failures (12)</summary>
+
+- `rar-hdrenc-small` (smoke): import failed: failed to process nzb: failed to process NZB archives: all files were skipped due to size or extension restrictions(error file extension not allowed)
+- `7z-obfuscated-small` (smoke): import failed: failed to process nzb: content verification failed: head of "7z-obfuscated-small.mkv" matches no media container signature: usenet file content is corrupt
+- `plain-season-pack` (core): import failed: failed to process nzb: availability check failed: file "Dexter.2006.S02E12.The.British.Invasion.PROPER.BluRay.1080p.TrueHD.5.1.AVC.REMUX-FraMeSToR.mkv" unavailable: usenet segment is missing
+- `7z-header-encrypted` (core): import failed: failed to process nzb: content verification failed: head of "7z-header-encrypted.mkv" matches no media container signature: usenet file content is corrupt
+- `rar-hdrenc-large` (core): import failed: failed to process nzb: content verification failed: head of "00000.m2ts" matches no media container signature: usenet file content is corrupt
+- `rar-hdrenc-obfuscated` (core): import failed: failed to process nzb: availability check failed: file "rar-hdrenc-obfuscated.mkv" unavailable: usenet segment is missing
+- `7z-obfuscated-hotd` (core): import failed: failed to process nzb: content verification failed: head of "7z-obfuscated-hotd.mkv" matches no media container signature: usenet file content is corrupt
+- `rar4-compressed` (negative): import failed: failed to process nzb: failed to process NZB archives: no valid files found in NZB
+- `rar5-mixed-compressed` (negative): import failed: failed to process nzb: failed to process NZB archives: all files were skipped due to size or extension restrictions(error file extension not allowed)
+- `rar-encrypted-no-password` (negative): import failed: failed to process nzb: failed to process NZB archives: no valid files found in NZB
+- `dead-post` (failure): POST <app>/sabnzbd/api?mode=addfile&output=json&category=bench&cat=bench&action=none -> 500: { "status": false, "error": "Failed to add dead-post.nzb: usenet parse failed: failed to stat segment OB7ucO5ujqhRQOnlY.part01.rar \u003cc1e5f474c7344dcb8d2c2cd5d34a7483@ngPost\u003e: all providers failed: NNTP ARTICLE_NOT_FOUND (code 430): No Such Article" }
+- `incomplete-archive-set` (failure): import failed: failed to process nzb: failed to process NZB archives: no valid files found in NZB
+
+</details>
+
+### raw NNTP baseline
+
+`raw` · JavaScript (this harness) · version `harness-builtin` · serving: http-range · runtime: source · startup 2 ms
+
+**Own set**: 24 entries, median post 26.3 GiB · click&rarr;byte 536 ms (shared population: 532 ms, 0.99×) · seq 35.0 MB/s · CPU 24.7 s/GiB
+
+Medians over the entries *this application served*, so they are not comparable
+across rows. Import and click&rarr;byte scale with post size, so an application
+that fails the large entries is credited with the fast medians of the small ones
+it survived; the multiplier is the size of that distortion.
+
+| Entry | Import | Cold TTFB | Seq MB/s | Seek TTFB | Playback p05 | To buffer | CPU s/GiB | Peak RSS | Status |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| `plain-small` | 426 ms | 106 ms | 35.9 | 327 ms | 21.6 | 1.44 s | 337.6 | 862 MiB | ok |
+| `rar-named-small` | 154 ms | 219 ms | 54.9† | 296 ms | 32.4 | — | 50.4 | 854 MiB | ok |
+| `rar-hdrenc-small` | 132 ms | 313 ms | 38.4† | 249 ms | 30.3 | 1.17 s | 44.3 | 846 MiB | ok |
+| `7z-obfuscated-small` | 122 ms | 337 ms | 702.1† | 213 ms | — | — | — | 845 MiB | ok |
+| `plain-medium` | 128 ms | 276 ms | 37.8 | 362 ms | 26.3 | 1.36 s | 20.1 | 907 MiB | ok |
+| `plain-season-pack` | 273 ms | 551 ms | 42.9 | 393 ms | 28.3 | 1.84 s | 20.3 | 988 MiB | ok |
+| `rar-stored-movie` | 169 ms | 288 ms | 32.4 | 359 ms | 27.2 | 1.28 s | 18.3 | 943 MiB | ok |
+| `rar4-stored` | 105 ms | 197 ms | 86.5† | 194 ms | — | — | — | 945 MiB | ok |
+| `rar4-inner-obfuscated` | 141 ms | 351 ms | 55.8† | 348 ms | 38.6 | 988 ms | 49.7 | 950 MiB | ok |
+| `rar-identity-grouped` | 132 ms | 218 ms | 29.3 | 341 ms | 6.2 | 2.21 s | 27.5 | 956 MiB | ok |
+| `rar4-obfuscated-volumes` | 177 ms | 363 ms | 35.9 | 330 ms | 25.2 | 917 ms | 17.4 | 944 MiB | ok |
+| `rar-numeric-extensions` | 223 ms | 377 ms | 38.6 | 379 ms | 35.7 | 1.32 s | 21.6 | 992 MiB | ok |
+| `7z-plain-header` | 119 ms | 317 ms | 38.8 | 329 ms | 28.8 | 1.67 s | 20.0 | 989 MiB | ok |
+| `7z-plain-large` | 420 ms | 339 ms | 36.8 | 402 ms | 30.0 | 1.22 s | 21.5 | 925 MiB | ok |
+| `7z-split-compressed-header` | 238 ms | 316 ms | 38.0 | 317 ms | 29.4 | 1.30 s | 26.2 | 947 MiB | ok |
+| `7z-header-encrypted` | 156 ms | 259 ms | 32.8 | 271 ms | 11.8 | 2.25 s | 38.9 | 949 MiB | ok |
+| `rar-hdrenc-large` | 271 ms | 295 ms | 33.1 | 305 ms | 28.9 | 1.42 s | 21.0 | 954 MiB | ok |
+| `rar-hdrenc-obfuscated` | 288 ms | 318 ms | 35.2 | 390 ms | 30.0 | 1.29 s | 17.4 | 968 MiB | ok |
+| `7z-obfuscated-large` | 247 ms | 304 ms | 32.7 | 272 ms | 28.3 | 1.40 s | 27.3 | 965 MiB | ok |
+| `7z-obfuscated-hotd` | 395 ms | 324 ms | 33.7 | 335 ms | 32.4 | 1.32 s | 24.5 | 963 MiB | ok |
+| `rar-nested-iso` | 248 ms | 268 ms | 33.3 | 266 ms | 27.6 | 1.21 s | 24.8 | 970 MiB | ok |
+| `rar-inner-tree` | 1.55 s | 457 ms | 35.0 | 329 ms | 18.7 | 1.43 s | 17.5 | 1042 MiB | ok |
+| `rar-season-pack` | 350 ms | 614 ms | 31.9 | 376 ms | 24.5 | 1.42 s | 34.5 | 987 MiB | ok |
+| `rar4-compressed` | 123 ms | 135 ms | — | — | — | — | — | — | ok |
+| `rar5-mixed-compressed` | 97 ms | 198 ms | — | — | — | — | — | 900 MiB | ok |
+| `rar-encrypted-no-password` | 247 ms | 450 ms | — | — | — | — | — | 921 MiB | ok |
+| `huge-direct-pack` | 913 ms | 319 ms | 33.6 | 260 ms | 5.7 | 1.50 s | 65.0 | 1138 MiB | ok |
+| `damaged-partial` | 194 ms | 278 ms | 15.3 | 378 ms | 41.8 | 1.36 s | 39.6 | 1018 MiB | ok |
+| `damaged-severe` | 671 ms | 277 ms | — | — | — | — | — | 1017 MiB | ok |
+| `dead-post` | — | — | — | — | — | — | — | 1019 MiB | **failed** |
+| `incomplete-archive-set` | 285 ms | 185 ms | — | — | — | — | — | 968 MiB | ok |
+
+† transfer too short to measure sustained rate (the file fit in flight).
+
+<details><summary>Failures (1)</summary>
+
+- `dead-post` (failure): first article missing
+
+</details>
+
+### AIOStreams
+
+`aiostreams` · TypeScript · version `9e59c4a` · serving: http-range · runtime: source · startup 24.30 s
+
+**Own set**: 24 entries, median post 26.3 GiB · click&rarr;byte 1.51 s (shared population: 983 ms, 0.65×) · seq 46.4 MB/s · CPU 6.7 s/GiB
+
+Medians over the entries *this application served*, so they are not comparable
+across rows. Import and click&rarr;byte scale with post size, so an application
+that fails the large entries is credited with the fast medians of the small ones
+it survived; the multiplier is the size of that distortion.
+
+| Entry | Import | Cold TTFB | Seq MB/s | Seek TTFB | Playback p05 | To buffer | CPU s/GiB | Peak RSS | Status |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| `plain-small` | 1.33 s | 168 ms | 40.5 | 806 ms | 9.7 | 2.78 s | 7.6 | 420 MiB | ok |
+| `rar-named-small` | 1.06 s | 152 ms | 46.3 | 189 ms | 22.4 | 1.69 s | 5.3 | 428 MiB | ok |
+| `rar-hdrenc-small` | 1.32 s | 190 ms | 50.7 | 36 ms | 36.9 | 297 ms | 10.7 | 533 MiB | ok |
+| `7z-obfuscated-small` | 1.33 s | 249 ms | 54.4 | 24 ms | — | 231 ms | 9.4 | 488 MiB | ok |
+| `plain-medium` | 285 ms | 84 ms | 48.5 | 150 ms | 25.7 | 1.94 s | 5.0 | 586 MiB | ok |
+| `plain-season-pack` | 656 ms | 173 ms | 48.3 | 266 ms | 25.1 | 2.76 s | 12.3 | 542 MiB | ok |
+| `rar-stored-movie` | 588 ms | 198 ms | 41.3 | 651 ms | 21.9 | 2.82 s | 5.4 | 559 MiB | ok |
+| `rar4-stored` | 277 ms | 181 ms | 41.5 | 406 ms | 23.1 | 1.51 s | 5.6 | 513 MiB | ok |
+| `rar4-inner-obfuscated` | 534 ms | 210 ms | 49.4 | 569 ms | 22.0 | 1.30 s | 6.4 | 518 MiB | ok |
+| `rar-identity-grouped` | 1.61 s | 239 ms | 44.2 | 595 ms | 28.8 | 1.45 s | 5.2 | 504 MiB | ok |
+| `rar4-obfuscated-volumes` | 1.33 s | 208 ms | 47.4 | 390 ms | 28.3 | 1.63 s | 5.7 | 540 MiB | ok |
+| `rar-numeric-extensions` | 3.29 s | 352 ms | 48.7 | 517 ms | 29.3 | 1.81 s | 5.7 | 519 MiB | ok |
+| `7z-plain-header` | 522 ms | 282 ms | 45.0 | 512 ms | 20.1 | 1.56 s | 5.8 | 537 MiB | ok |
+| `7z-plain-large` | 622 ms | 318 ms | 46.0 | 523 ms | 25.1 | 1.87 s | 5.6 | 536 MiB | ok |
+| `7z-split-compressed-header` | 657 ms | 327 ms | 45.0 | 494 ms | 22.0 | 1.49 s | 5.4 | 555 MiB | ok |
+| `7z-header-encrypted` | 560 ms | 176 ms | 43.9 | 491 ms | 12.6 | 1.48 s | 12.5 | 655 MiB | ok |
+| `rar-hdrenc-large` | 5.97 s | 305 ms | 46.4 | 582 ms | 28.0 | 1.70 s | 13.1 | 708 MiB | ok |
+| `rar-hdrenc-obfuscated` | 3.96 s | 386 ms | 47.7 | 622 ms | 14.3 | 1.50 s | 12.8 | 767 MiB | ok |
+| `7z-obfuscated-large` | 13.32 s | 458 ms | 51.4 | 495 ms | 32.1 | 1.77 s | 7.2 | 728 MiB | ok |
+| `7z-obfuscated-hotd` | 1.70 s | 409 ms | 47.9 | 305 ms | 31.9 | 1.42 s | 12.8 | 804 MiB | ok |
+| `rar-nested-iso` | 457 ms | 369 ms | 48.6 | 666 ms | 35.6 | 1.54 s | 7.0 | 765 MiB | ok |
+| `rar-inner-tree` | 3.11 s | 985 ms | 45.9 | 475 ms | 27.8 | 1.87 s | 7.3 | 795 MiB | ok |
+| `rar-season-pack` | 2.73 s | 98 ms | 39.6 | 668 ms | 17.9 | 1.66 s | 6.0 | 815 MiB | ok |
+| `rar4-compressed` | — | — | — | — | — | — | — | 719 MiB | **failed** |
+| `rar5-mixed-compressed` | — | — | — | — | — | — | — | 727 MiB | **failed** |
+| `rar-encrypted-no-password` | — | — | — | — | — | — | — | — | **failed** |
+| `huge-direct-pack` | 2.39 s | 1.08 s | 45.8 | 219 ms | 24.7 | 1.42 s | 7.6 | 1071 MiB | ok |
+| `damaged-partial` | 1.85 s | 122 ms | 48.5 | 481 ms | 33.5 | 1.29 s | 6.0 | 991 MiB | ok |
+| `damaged-severe` | 4.00 s | 317 ms | — | — | — | — | — | 903 MiB | ok |
+| `dead-post` | — | — | — | — | — | — | — | 908 MiB | **failed** |
+| `incomplete-archive-set` | — | — | — | — | — | — | — | 910 MiB | **failed** |
+
+<details><summary>Failures (5)</summary>
+
+- `rar4-compressed` (negative): import failed: Archive is compressed: not streamable [archive_compressed]
+- `rar5-mixed-compressed` (negative): import failed: Archive is compressed: not streamable [archive_compressed]
+- `rar-encrypted-no-password` (negative): import failed: Archive is encrypted: password required [archive_encrypted]
+- `dead-post` (failure): import failed: Missing on all providers: incomplete or removed [missing_on_providers]
+- `incomplete-archive-set` (failure): import failed: Archive incomplete: volumes missing from the post [incomplete_archive]
 
 </details>
 

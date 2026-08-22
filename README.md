@@ -5,12 +5,11 @@ against a **real NNTP provider** and a **hand-curated, adversarial NZB corpus**.
 
 ## [Latest results](docs/RESULTS.md)
 
-**[docs/RESULTS.md](docs/RESULTS.md)** is a full pass of 10 applications over 31 corpus
-entries, run 2026-08-21 against Newshosting at a normalised 20 connections each. It
-reports latency, seek behaviour, throughput, memory, CPU per GiB delivered and a
-capability matrix, and it states its own limits: which rows came from a container, which
-were merged from a second sitting, and which one should not be read as a like-for-like
-result at all.
+**[docs/RESULTS.md](docs/RESULTS.md)** is a full pass of 9 applications over 31 corpus
+entries, run 2026-08-22 against Newshosting at a normalised 20 connections each. It
+reports latency, seek behaviour, throughput, memory, CPU cost and shape, and a
+capability matrix, and it states its own limits: which rows came from a container and
+which were merged from a second sitting.
 
 Read it with three things in mind:
 

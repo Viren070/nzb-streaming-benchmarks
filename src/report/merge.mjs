@@ -27,6 +27,9 @@ const currentIds = new Set(corpus.items.map((i) => i.id));
 const patchIds = new Set(patch.apps.flatMap((a) => (a.items ?? []).map((i) => i.id)));
 
 const summary = { replaced: [], added: [], dropped: [], apps: [] };
+// Keep corpus order so the report reads the same as an unmerged one.
+const order = corpus.items.map((i) => i.id);
+const inCorpusOrder = (items) => [...items].sort((x, y) => order.indexOf(x.id) - order.indexOf(y.id));
 
 for (const app of base.apps) {
   const from = patch.apps.find((p) => p.app === app.app);
@@ -47,10 +50,19 @@ for (const app of base.apps) {
     .map((i) => ({ ...i, fromRun: patch.runId }));
   for (const i of incoming) summary.added.push(`${app.app}/${i.id}`);
 
-  // Keep corpus order so the report reads the same as an unmerged one.
-  const order = corpus.items.map((i) => i.id);
-  app.items = [...kept, ...incoming].sort((x, y) => order.indexOf(x.id) - order.indexOf(y.id));
+  app.items = inCorpusOrder([...kept, ...incoming]);
   if (from) summary.apps.push(app.app);
+}
+
+// A run that died partway leaves applications with no rows at all, so a patch carrying
+// one the base never recorded is appended whole rather than silently dropped.
+for (const from of patch.apps) {
+  if (base.apps.some((a) => a.app === from.app)) continue;
+  const items = (from.items ?? []).filter((i) => currentIds.has(i.id)).map((i) => ({ ...i, fromRun: patch.runId }));
+  if (!items.length) continue;
+  base.apps.push({ ...from, items: inCorpusOrder(items) });
+  summary.apps.push(from.app);
+  for (const i of items) summary.added.push(`${from.app}/${i.id}`);
 }
 
 base.corpus = {
