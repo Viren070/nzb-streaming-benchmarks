@@ -50,7 +50,12 @@ for (const app of base.apps) {
     .map((i) => ({ ...i, fromRun: patch.runId }));
   for (const i of incoming) summary.added.push(`${app.app}/${i.id}`);
 
-  app.items = inCorpusOrder([...kept, ...incoming]);
+  const merged = inCorpusOrder([...kept, ...incoming]);
+  if (from && !kept.length) {
+    const { items: _replaced, ...meta } = from;
+    Object.assign(app, meta);
+  }
+  app.items = merged;
   if (from) summary.apps.push(app.app);
 }
 
