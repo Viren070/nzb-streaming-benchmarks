@@ -186,6 +186,16 @@ export function renderMarkdown(results) {
   p(`> The \`raw\` row is this harness fetching the same articles with no application in`);
   p(`> the middle, so read every other number relative to it.`);
   p();
+  p(`> **The link is the largest source of error here, and it is not controlled.** These`);
+  p(`> runs are made over consumer Wi-Fi to a commercial provider, and both vary on their`);
+  p(`> own. Repeating a pass with nothing changed but the clock has moved the whole-run`);
+  p(`> median by 14% and individual entries by 55%, and one measured evening had a single`);
+  p(`> post served at 9 MB/s by \`raw\` while others on the same connection ran at 45 MB/s.`);
+  p(`> Provider variance is per post, not per session: which entries are slow changes from`);
+  p(`> run to run, so a low number for one entry is not a property of the application.`);
+  p(`> Treat differences under roughly 20% between applications, or under 50% on a single`);
+  p(`> entry, as unresolved by one pass. Only repeated runs can separate the two.`);
+  p();
 
   const ran = results.apps.filter((a) => a.status === 'ok');
   const notRun = results.apps.filter((a) => a.status !== 'ok');
@@ -313,10 +323,13 @@ export function renderMarkdown(results) {
     }
     p();
     p(`*Click&rarr;byte* is import + cold open: what a viewer waits through after pressing`);
-    p(`play, and the only one of these three that is comparable. Mount-style apps`);
-    p(`(altmount, the nzbdav family) do their inspection at import, while addon-style apps`);
-    p(`(StreamNZB, AIOStreams) return a session in milliseconds and do the same work on`);
-    p(`first byte. *Warm TTFB* is the same open repeated, so it measures what the engine`);
+    p(`play, and the only one of these three that is comparable. Every application here but`);
+    p(`one inspects the post at import and then answers the first byte quickly, so import is`);
+    p(`over 80% of the wait. StreamNZB is the exception: it returns a session in`);
+    p(`milliseconds and does the same work on first byte, which is why its import reads as`);
+    p(`free and its cold TTFB does not. Serving mode does not predict this, since AIOStreams`);
+    p(`answers byte ranges like StreamNZB and still front-loads like the mount-style`);
+    p(`applications. *Warm TTFB* is the same open repeated, so it measures what the engine`);
     p(`cached rather than what it can do cold.`);
     p();
 
